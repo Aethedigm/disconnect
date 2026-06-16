@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	game := &Game{}
+	game := NewGame()
 
 	ebiten.SetWindowSize(854, 480)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)

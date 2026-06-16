@@ -1,27 +1,27 @@
 package main
 
 import (
-	"main/objects"
+	"main/scenes"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Game struct {
-	GameObjects []objects.GameObject
+	sceneController scenes.SceneController
+}
+
+func NewGame() *Game {
+	return &Game{
+		sceneController: *scenes.NewSceneController(scenes.NewMainMenuScene()),
+	}
 }
 
 func (g *Game) Update() error {
-	for _, gOjbect := range g.GameObjects {
-		gOjbect.Update()
-	}
-
-	return nil
+	return g.sceneController.Update()
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	for _, gObject := range g.GameObjects {
-		gObject.Draw(screen)
-	}
+	g.sceneController.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
