@@ -6,13 +6,17 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type UpdateResult struct {
+	Spawn []GameObject
+}
+
 type GameObject interface {
-	Update()
+	Update() UpdateResult
 	Draw(*ebiten.Image)
 }
 
-type TeamOwned interface {
-	TeamOwnership() Team
+type HasTeam interface {
+	TeamOwned() Team
 }
 
 type RadioNode interface {

@@ -30,6 +30,7 @@ type MechaUpperPart struct {
 	Sprite        *ebiten.Image
 	Rotation      float64
 	RotationSpeed float64
+	Guns          []GunMount
 }
 
 func NewEnemyMecha(position utils.Vector2) *Mecha {
@@ -72,21 +73,27 @@ func NewPlayerMecha(position utils.Vector2) *Mecha {
 		Controller: &PlayerController{},
 		Team:       TeamFriendly,
 		LowerPart: MechaLowerPart{
-			Sprite:        utils.ImageDecode(data.TankBottomOne),
+			Sprite:        utils.ImageDecode(data.MechaBottomLegs),
 			DriveSpeed:    1,
 			RotationSpeed: 2 * math.Pi / 180,
 		},
 		UpperPart: MechaUpperPart{
-			Sprite:        utils.ImageDecode(data.TankTopOne),
+			Sprite:        utils.ImageDecode(data.MechaTop),
 			RotationSpeed: 2 * math.Pi / 180,
+			Guns: []GunMount{
+				{
+					LocalPosition: utils.Vector2{X: 5, Y: 5},
+					LocalRotation: 0,
+					Weapon:        &Weapon{},
+				},
+			},
 		},
 	}
 }
 
-func (m *Mecha) Update() {
+func (m *Mecha) Update() (res UpdateResult) {
 	inp := m.Controller.Update(m.Position)
 
-	// Preserve controller angular input
 	if inp.Move.Length() > 1 {
 		inp.Move = inp.Move.Normalized()
 	}
@@ -100,8 +107,20 @@ func (m *Mecha) Update() {
 	tankMoveDir.MulScalar(m.LowerPart.DriveSpeed * inp.Move.Y)
 	m.Position.Add(tankMoveDir)
 
+	if inp.Fire {
+		// Intent to fire, check conditions if able
+		for i := range m.UpperPart.Guns {
+			res.Spawn = append(
+				res.Spawn,
+				m.UpperPart.Guns[i].Fire(m.Position, m.UpperPart.Rotation, m.Team)...,
+			)
+		}
+	}
+
 	// Rotate Lower Part
 	m.LowerPart.Rotation += m.LowerPart.RotationSpeed * inp.Move.X
+
+	return
 }
 
 func drawPart(screen, sprite *ebiten.Image, pos utils.Vector2, rot float64) {

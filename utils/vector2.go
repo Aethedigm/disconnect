@@ -54,6 +54,16 @@ func (v *Vector2) Equals(res Vector2) bool {
 	return true
 }
 
+func (v *Vector2) Rotated(res float64) Vector2 {
+	c := math.Cos(res)
+	s := math.Sin(res)
+
+	return Vector2{
+		X: v.X*c - v.Y*s,
+		Y: v.X*s + v.Y*c,
+	}
+}
+
 // Mutables //
 
 func (v *Vector2) Add(res Vector2) {

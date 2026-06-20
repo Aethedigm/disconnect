@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"log"
 	"main/utils"
 	"math"
 
@@ -36,6 +37,7 @@ func (p *PlayerController) Update(position utils.Vector2) (inp Input) {
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) || ebiten.IsGamepadButtonPressed(0, ebiten.GamepadButton0) {
 		inp.Fire = true
+		log.Println("Should fire...")
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyA) {

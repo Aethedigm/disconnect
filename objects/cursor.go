@@ -17,7 +17,9 @@ func NewCursor() *Cursor {
 	}
 }
 
-func (c *Cursor) Update() {}
+func (c *Cursor) Update() (res UpdateResult) {
+	return
+}
 
 func (c *Cursor) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}

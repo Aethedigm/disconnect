@@ -29,11 +29,13 @@ func NewNeutralTower(position utils.Vector2) *Tower {
 	}
 }
 
-func (t *Tower) Update() {
+func (t *Tower) Update() (res UpdateResult) {
 	if t.CaptureProgress > towerCaptureMax {
 		t.CaptureProgress = towerCaptureMax
 	}
+	return
 }
+
 func (t *Tower) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 

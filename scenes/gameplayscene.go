@@ -56,8 +56,11 @@ func (g *GameplayScene) addObject(obj objects.GameObject) {
 }
 
 func (g *GameplayScene) Update(controller *SceneController) error {
+	var spawned []objects.GameObject
+
 	for i := range g.gameObjects {
-		g.gameObjects[i].Update()
+		res := g.gameObjects[i].Update()
+		spawned = append(spawned, res.Spawn...)
 	}
 
 	// Dynamic vs Static: Push Dynamic Away
@@ -87,6 +90,10 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 	// Tower Capture
 	for _, tower := range g.towers {
 		g.updateTowerCapture(tower)
+	}
+
+	for _, obj := range spawned {
+		g.addObject(obj)
 	}
 
 	return nil
