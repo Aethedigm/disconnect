@@ -17,3 +17,9 @@ var TankBottomOne []byte
 
 //go:embed TowerBase.png
 var TowerBase []byte
+
+//go:embed MechaTop.png
+var MechaTop []byte
+
+//go:embed MechaBottomLegs.png
+var MechaBottomLegs []byte
