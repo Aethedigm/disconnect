@@ -95,6 +95,34 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 		}
 	}
 
+	// Projectiles vs Dynamic+Static
+	for i := range g.projectiles {
+
+		// Static just destroys the projectile
+		// TODO: Trigger explosion still from rockets?
+		for _, static := range g.staticCollisions {
+			val := physics.ResolveCircleOverlap(g.projectiles[i].Collider(), static.Collider())
+			if !val.Equals(utils.Vector2Zero()) {
+				g.projectiles[i].Destroy()
+			}
+		}
+
+		for j := range g.dynamicCollisions {
+			// TODO: Impl DamageTarget interface
+			if targetTeam, ok := g.dynamicCollisions[j].(objects.HasTeam); ok {
+				if targetTeam.TeamOwned() == g.projectiles[i].TeamOwned() {
+					continue
+				}
+			}
+
+			val := physics.ResolveCircleOverlap(g.projectiles[i].Collider(), g.dynamicCollisions[j].Collider())
+			if !val.Equals(utils.Vector2Zero()) {
+				// Do some kind of damage to the dynamic object
+				g.projectiles[i].Destroy()
+			}
+		}
+	}
+
 	// Tower Capture
 	for _, tower := range g.towers {
 		g.updateTowerCapture(tower)
