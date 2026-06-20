@@ -2,6 +2,7 @@ package objects
 
 import (
 	"main/data"
+	"main/physics"
 	"main/utils"
 	"math"
 
@@ -15,10 +16,6 @@ type Mecha struct {
 
 	LowerPart MechaLowerPart
 	UpperPart MechaUpperPart
-}
-
-type MechaPart interface {
-	Draw(screen *ebiten.Image)
 }
 
 type MechaLowerPart struct {
@@ -38,9 +35,10 @@ type MechaUpperPart struct {
 func NewMecha(position utils.Vector2) *Mecha {
 	return &Mecha{
 		Position:   position,
-		Controller: &PlayerController{},
+		Controller: &AIController{},
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
+			DriveSpeed:    1,
 			RotationSpeed: 2 * math.Pi / 180,
 		},
 		UpperPart: MechaUpperPart{
@@ -56,6 +54,7 @@ func NewPlayerMecha(position utils.Vector2) *Mecha {
 		Controller: &PlayerController{},
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
+			DriveSpeed:    1,
 			RotationSpeed: 2 * math.Pi / 180,
 		},
 		UpperPart: MechaUpperPart{
@@ -75,19 +74,12 @@ func (m *Mecha) Update() {
 
 	// Rotate upper part if HasAim
 	if inp.HasAim {
-		// Apply rotation: Rotation Speed towards Angle
-		// Target Bearing : inp.AimTargetAngle
-		// Current Bearing: m.UpperPart.Rotation
-		diff := inp.AimTargetAngle - m.UpperPart.Rotation
-		diff = math.Atan2(math.Sin(diff), math.Cos(diff))
-
-		step := min(math.Abs(diff), m.UpperPart.RotationSpeed)
-		m.UpperPart.Rotation += math.Copysign(step, diff)
+		m.UpperPart.Rotation += utils.RotateTowards(inp.AimTargetAngle, m.UpperPart.Rotation, m.UpperPart.RotationSpeed)
 	}
 
-	// TODO: Replace with tank forward/backward only
-	tankMove := utils.Vector2{X: 0, Y: inp.Move.Y}
-	m.Position.Add(tankMove)
+	tankMoveDir := utils.Vector2{X: math.Cos(m.LowerPart.Rotation), Y: math.Sin(m.LowerPart.Rotation)}
+	tankMoveDir.MulScalar(m.LowerPart.DriveSpeed * inp.Move.Y)
+	m.Position.Add(tankMoveDir)
 
 	// Rotate Lower Part
 	m.LowerPart.Rotation += m.LowerPart.RotationSpeed * inp.Move.X
@@ -111,4 +103,12 @@ func (m *Mecha) Draw(screen *ebiten.Image) {
 	// Draw order matters, Lower then Upper
 	drawPart(screen, m.LowerPart.Sprite, m.Position, m.LowerPart.Rotation)
 	drawPart(screen, m.UpperPart.Sprite, m.Position, m.UpperPart.Rotation)
+}
+
+func (m *Mecha) Collider() physics.CircleCollider {
+	bounds := m.LowerPart.Sprite.Bounds()
+	return physics.CircleCollider{
+		Center: m.Position,
+		Radius: max(float64(bounds.Dx())/2, float64(bounds.Dy())/2),
+	}
 }

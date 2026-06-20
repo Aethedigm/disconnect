@@ -71,6 +71,11 @@ func (v *Vector2) Mul(res Vector2) {
 	v.Y *= res.Y
 }
 
+func (v *Vector2) MulScalar(res float64) {
+	v.X *= res
+	v.Y *= res
+}
+
 func (v *Vector2) Normalize() {
 	n := v.Normalized()
 

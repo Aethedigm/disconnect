@@ -18,7 +18,12 @@ type Controller interface {
 	Update(utils.Vector2) Input
 }
 
+type AIController struct{}
 type PlayerController struct{}
+
+func (a *AIController) Update(position utils.Vector2) (inp Input) {
+	return
+}
 
 func (p *PlayerController) Update(position utils.Vector2) (inp Input) {
 	inp.Move = utils.Vector2{}
@@ -37,11 +42,11 @@ func (p *PlayerController) Update(position utils.Vector2) (inp Input) {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		inp.Move.Y--
+		inp.Move.Y++
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		inp.Move.Y++
+		inp.Move.Y--
 	}
 
 	// Set turn target angle
