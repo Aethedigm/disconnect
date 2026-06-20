@@ -1,6 +1,7 @@
 package scenes
 
 import (
+	"image/color"
 	"main/objects"
 	"main/physics"
 	"main/utils"
@@ -12,14 +13,19 @@ type GameplayScene struct {
 	gameObjects       []objects.GameObject
 	staticCollisions  []objects.Collisions
 	dynamicCollisions []objects.DynamicCollisions
+	radioCollisions   []objects.RadioNode
+	capturers         []objects.Capturer
+	towers            []*objects.Tower
 }
 
 func NewGameplayScene() *GameplayScene {
 	gScene := &GameplayScene{}
 
 	ebiten.SetCursorMode(ebiten.CursorModeHidden)
-	gScene.addObject(objects.NewMecha(utils.Vector2{X: 100, Y: 100}))
+	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 100, Y: 100}))
+	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 500, Y: 300}))
 	gScene.addObject(objects.NewPlayerMecha(utils.Vector2{X: 30, Y: 30}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 800, Y: 350}))
 	gScene.addObject(objects.NewCursor())
 
 	return gScene
@@ -34,6 +40,18 @@ func (g *GameplayScene) addObject(obj objects.GameObject) {
 		} else {
 			g.staticCollisions = append(g.staticCollisions, sCollider)
 		}
+	}
+
+	if capture, ok := obj.(objects.Capturer); ok {
+		g.capturers = append(g.capturers, capture)
+	}
+
+	if tower, ok := obj.(*objects.Tower); ok {
+		g.towers = append(g.towers, tower)
+	}
+
+	if radioCollider, ok := obj.(objects.RadioNode); ok {
+		g.radioCollisions = append(g.radioCollisions, radioCollider)
 	}
 }
 
@@ -66,10 +84,43 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 		}
 	}
 
+	// Tower Capture
+	for _, tower := range g.towers {
+		g.updateTowerCapture(tower)
+	}
+
 	return nil
 }
 
+func (g *GameplayScene) updateTowerCapture(tower *objects.Tower) {
+	// if owning team is not null, we set owning team to first target
+	// if object in capture radius, and same team, we increase capture by 2
+	// if object in capture radius, and different team, we decrease capture by 2
+	// once captured, towers should not be null team again
+	for _, capture := range g.capturers {
+		// Detect if in radius
+		val := physics.ResolveCircleOverlap(tower.CaptureCollider(), capture.Collider())
+		if !val.Equals(utils.Vector2Zero()) { // Collision of some kind
+			if tower.TeamOwned() == objects.TeamNone { // Should only happen once per tower
+				tower.Team = capture.TeamOwned()
+			}
+
+			if tower.TeamOwned() == capture.TeamOwned() {
+				tower.CaptureProgress += 2
+			} else {
+				tower.CaptureProgress -= 2
+			}
+
+			if tower.CaptureProgress < 1 {
+				tower.Team = capture.TeamOwned()
+				tower.CaptureProgress = 10
+			}
+		}
+	}
+}
+
 func (g *GameplayScene) Draw(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{162, 169, 71, 0})
 	for _, gObj := range g.gameObjects {
 		gObj.Draw(screen)
 	}

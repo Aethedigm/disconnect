@@ -14,3 +14,6 @@ var TankTopOne []byte
 
 //go:embed TankBottom.png
 var TankBottomOne []byte
+
+//go:embed TowerBase.png
+var TowerBase []byte

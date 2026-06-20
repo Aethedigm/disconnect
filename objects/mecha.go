@@ -13,6 +13,7 @@ type Mecha struct {
 	Position utils.Vector2
 
 	Controller Controller
+	Team       Team
 
 	LowerPart MechaLowerPart
 	UpperPart MechaUpperPart
@@ -31,11 +32,28 @@ type MechaUpperPart struct {
 	RotationSpeed float64
 }
 
-// TODO: Default to AI for this constructor
-func NewMecha(position utils.Vector2) *Mecha {
+func NewEnemyMecha(position utils.Vector2) *Mecha {
 	return &Mecha{
 		Position:   position,
-		Controller: &AIController{},
+		Controller: &AIEnemyController{},
+		Team:       TeamEnemy,
+		LowerPart: MechaLowerPart{
+			Sprite:        utils.ImageDecode(data.TankBottomOne),
+			DriveSpeed:    1,
+			RotationSpeed: 2 * math.Pi / 180,
+		},
+		UpperPart: MechaUpperPart{
+			Sprite:        utils.ImageDecode(data.TankTopOne),
+			RotationSpeed: 2 * math.Pi / 180,
+		},
+	}
+}
+
+func NewFriendlyMecha(position utils.Vector2) *Mecha {
+	return &Mecha{
+		Position:   position,
+		Controller: &AIFriendlyController{},
+		Team:       TeamFriendly,
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
 			DriveSpeed:    1,
@@ -52,6 +70,7 @@ func NewPlayerMecha(position utils.Vector2) *Mecha {
 	return &Mecha{
 		Position:   position,
 		Controller: &PlayerController{},
+		Team:       TeamFriendly,
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
 			DriveSpeed:    1,
@@ -115,4 +134,8 @@ func (m *Mecha) Collider() physics.CircleCollider {
 
 func (m *Mecha) Move(delta utils.Vector2) {
 	m.Position.Add(delta)
+}
+
+func (m *Mecha) TeamOwned() Team {
+	return m.Team
 }

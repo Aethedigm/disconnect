@@ -18,10 +18,15 @@ type Controller interface {
 	Update(utils.Vector2) Input
 }
 
-type AIController struct{}
+type AIEnemyController struct{}
+type AIFriendlyController struct{}
 type PlayerController struct{}
 
-func (a *AIController) Update(position utils.Vector2) (inp Input) {
+func (a *AIEnemyController) Update(position utils.Vector2) (inp Input) {
+	return
+}
+
+func (a *AIFriendlyController) Update(position utils.Vector2) (inp Input) {
 	return
 }
 

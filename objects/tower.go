@@ -1,0 +1,73 @@
+package objects
+
+import (
+	"main/data"
+	"main/physics"
+	"main/utils"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
+const (
+	towerCaptureMax = 1000
+)
+
+type Tower struct {
+	Team Team
+
+	Position utils.Vector2
+	Sprite   *ebiten.Image
+
+	CaptureProgress float64
+	CapturingTeam   Team
+}
+
+func NewNeutralTower(position utils.Vector2) *Tower {
+	return &Tower{
+		Position: position,
+		Sprite:   utils.ImageDecode(data.TowerBase),
+	}
+}
+
+func (t *Tower) Update() {
+	if t.CaptureProgress > towerCaptureMax {
+		t.CaptureProgress = towerCaptureMax
+	}
+}
+func (t *Tower) Draw(screen *ebiten.Image) {
+	op := &ebiten.DrawImageOptions{}
+
+	bounds := t.Sprite.Bounds()
+	w := float64(bounds.Dx())
+	h := float64(bounds.Dy())
+
+	op.GeoM.Translate(-w/2, -h/2)
+	op.GeoM.Translate(t.Position.X, t.Position.Y)
+
+	screen.DrawImage(t.Sprite, op)
+}
+
+func (t *Tower) Collider() physics.CircleCollider {
+	return physics.CircleCollider{
+		Center: t.Position,
+		Radius: 28,
+	}
+}
+
+func (t *Tower) RadioCollider() physics.CircleCollider {
+	return physics.CircleCollider{
+		Center: t.Position,
+		Radius: 300,
+	}
+}
+
+func (t *Tower) CaptureCollider() physics.CircleCollider {
+	return physics.CircleCollider{
+		Center: t.Position,
+		Radius: 60,
+	}
+}
+
+func (t *Tower) TeamOwned() Team {
+	return t.Team
+}
