@@ -7,7 +7,8 @@ import (
 )
 
 type UpdateResult struct {
-	Spawn []GameObject
+	Spawn   []GameObject
+	Destroy bool
 }
 
 type GameObject interface {

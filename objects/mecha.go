@@ -82,9 +82,18 @@ func NewPlayerMecha(position utils.Vector2) *Mecha {
 			RotationSpeed: 2 * math.Pi / 180,
 			Guns: []GunMount{
 				{
-					LocalPosition: utils.Vector2{X: 5, Y: 5},
+					LocalPosition: utils.Vector2{X: 32, Y: 7},
 					LocalRotation: 0,
-					Weapon:        &Weapon{},
+					Weapon: &Weapon{
+						FireRate: 10,
+					},
+				},
+				{
+					LocalPosition: utils.Vector2{X: 32, Y: -7},
+					LocalRotation: 0,
+					Weapon: &Weapon{
+						FireRate: 10,
+					},
 				},
 			},
 		},
@@ -119,6 +128,11 @@ func (m *Mecha) Update() (res UpdateResult) {
 
 	// Rotate Lower Part
 	m.LowerPart.Rotation += m.LowerPart.RotationSpeed * inp.Move.X
+
+	// Tick time on weapons
+	for i := range m.UpperPart.Guns {
+		m.UpperPart.Guns[i].Update()
+	}
 
 	return
 }

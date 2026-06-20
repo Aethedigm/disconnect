@@ -16,6 +16,7 @@ type GameplayScene struct {
 	radioCollisions   []objects.RadioNode
 	capturers         []objects.Capturer
 	towers            []*objects.Tower
+	projectiles       []objects.Projectile
 }
 
 func NewGameplayScene() *GameplayScene {
@@ -34,7 +35,9 @@ func NewGameplayScene() *GameplayScene {
 func (g *GameplayScene) addObject(obj objects.GameObject) {
 	g.gameObjects = append(g.gameObjects, obj)
 
-	if sCollider, ok := obj.(objects.Collisions); ok {
+	if projectile, ok := obj.(objects.Projectile); ok {
+		g.projectiles = append(g.projectiles, projectile)
+	} else if sCollider, ok := obj.(objects.Collisions); ok {
 		if dCollider, ok := obj.(objects.DynamicCollisions); ok {
 			g.dynamicCollisions = append(g.dynamicCollisions, dCollider)
 		} else {
@@ -57,10 +60,15 @@ func (g *GameplayScene) addObject(obj objects.GameObject) {
 
 func (g *GameplayScene) Update(controller *SceneController) error {
 	var spawned []objects.GameObject
+	var destroyed []objects.GameObject
 
 	for i := range g.gameObjects {
 		res := g.gameObjects[i].Update()
 		spawned = append(spawned, res.Spawn...)
+
+		if res.Destroy {
+			destroyed = append(destroyed, g.gameObjects[i])
+		}
 	}
 
 	// Dynamic vs Static: Push Dynamic Away
@@ -90,6 +98,10 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 	// Tower Capture
 	for _, tower := range g.towers {
 		g.updateTowerCapture(tower)
+	}
+
+	for _, obj := range destroyed {
+		g.removeObject(obj)
 	}
 
 	for _, obj := range spawned {
@@ -130,5 +142,31 @@ func (g *GameplayScene) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{162, 169, 71, 0})
 	for _, gObj := range g.gameObjects {
 		gObj.Draw(screen)
+	}
+}
+
+func removeComparable[T comparable](items []T, target T) []T {
+	for i := range items {
+		if items[i] == target {
+			return append(items[:i], items[i+1:]...)
+		}
+	}
+
+	return items
+}
+
+func (g *GameplayScene) removeObject(obj objects.GameObject) {
+	g.gameObjects = removeComparable(g.gameObjects, obj)
+
+	if projectile, ok := obj.(objects.Projectile); ok {
+		g.projectiles = removeComparable(g.projectiles, projectile)
+	}
+
+	if dynamic, ok := obj.(objects.DynamicCollisions); ok {
+		g.dynamicCollisions = removeComparable(g.dynamicCollisions, dynamic)
+	}
+
+	if capture, ok := obj.(objects.Capturer); ok {
+		g.capturers = removeComparable(g.capturers, capture)
 	}
 }

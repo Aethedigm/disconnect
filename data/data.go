@@ -23,3 +23,6 @@ var MechaTop []byte
 
 //go:embed MechaBottomLegs.png
 var MechaBottomLegs []byte
+
+//go:embed Bullet.png
+var Bullet []byte
