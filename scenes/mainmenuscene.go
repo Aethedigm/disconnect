@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"main/data"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
@@ -26,6 +27,10 @@ func NewMainMenuScene() *MainMenuScene {
 }
 
 func (m *MainMenuScene) Update(controller *SceneController) error {
+	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		os.Exit(0)
+	}
+
 	return nil
 }
 

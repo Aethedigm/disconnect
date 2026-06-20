@@ -2,6 +2,7 @@ package scenes
 
 import (
 	"main/objects"
+	"main/utils"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -11,7 +12,11 @@ type GameplayScene struct {
 }
 
 func NewGameplayScene() *GameplayScene {
-	return &GameplayScene{}
+	gScene := &GameplayScene{}
+
+	gScene.gameObjects = append(gScene.gameObjects, objects.NewMecha(utils.Vector2{30, 30}))
+
+	return gScene
 }
 
 func (g *GameplayScene) Update(controller *SceneController) error {

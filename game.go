@@ -12,7 +12,8 @@ type Game struct {
 
 func NewGame() *Game {
 	return &Game{
-		sceneController: *scenes.NewSceneController(scenes.NewMainMenuScene()),
+		// sceneController: *scenes.NewSceneController(scenes.NewMainMenuScene()),
+		sceneController: *scenes.NewSceneController(scenes.NewGameplayScene()),
 	}
 }
 

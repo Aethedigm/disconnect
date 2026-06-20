@@ -11,6 +11,8 @@ func main() {
 
 	ebiten.SetWindowSize(854, 480)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	ebiten.SetWindowTitle("Disconnect")
+
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
