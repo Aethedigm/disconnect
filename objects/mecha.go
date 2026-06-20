@@ -112,3 +112,7 @@ func (m *Mecha) Collider() physics.CircleCollider {
 		Radius: max(float64(bounds.Dx())/2, float64(bounds.Dy())/2),
 	}
 }
+
+func (m *Mecha) Move(delta utils.Vector2) {
+	m.Position.Add(delta)
+}
