@@ -30,6 +30,12 @@ func ImageDecode(spriteData []byte) *ebiten.Image {
 	return ebiten.NewImageFromImage(img)
 }
 
+func RotateTowardsVectorFromVector(TargetVector, CurrentVector Vector2, CurrentRotation, RotationSpeed float64) float64 {
+	aimTurn := TargetVector.Subbed(CurrentVector)
+	aim := math.Atan2(aimTurn.Y, aimTurn.X)
+	return RotateTowards(aim, CurrentRotation, RotationSpeed)
+}
+
 func RotateTowards(AimTargetAngle, CurrentRotation, RotationSpeed float64) float64 {
 	// Apply rotation: Rotation Speed towards Angle
 	// Target Bearing : AimTargetAngle

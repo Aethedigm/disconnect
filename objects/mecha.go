@@ -24,7 +24,14 @@ type Mecha struct {
 }
 
 func (m *Mecha) Update() (res UpdateResult) {
-	inp := m.Controller.Update(m.Position, m.wc)
+	mc := MechaContext{
+		Position:      m.Position,
+		UpperRot:      m.UpperPart.Rotation,
+		UpperRotSpeed: m.UpperPart.RotationSpeed,
+		LowerRot:      m.LowerPart.Rotation,
+		LowerRotSpeed: m.LowerPart.RotationSpeed,
+	}
+	inp := m.Controller.Update(mc, m.wc)
 
 	if inp.Move.Length() > 1 {
 		inp.Move = inp.Move.Normalized()

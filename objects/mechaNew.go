@@ -8,10 +8,12 @@ import (
 
 func NewEnemyMecha(position utils.Vector2) *Mecha {
 	return &Mecha{
-		Position:   position,
-		Controller: &AIController{},
-		Team:       TeamEnemy,
-		Health:     100,
+		Position: position,
+		Controller: &AIController{
+			Team: TeamEnemy,
+		},
+		Team:   TeamEnemy,
+		Health: 100,
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
 			DriveSpeed:    1,
@@ -26,10 +28,12 @@ func NewEnemyMecha(position utils.Vector2) *Mecha {
 
 func NewFriendlyMecha(position utils.Vector2) *Mecha {
 	return &Mecha{
-		Position:   position,
-		Controller: &AIController{},
-		Team:       TeamFriendly,
-		Health:     100,
+		Position: position,
+		Controller: &AIController{
+			Team: TeamFriendly,
+		},
+		Team:   TeamFriendly,
+		Health: 100,
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
 			DriveSpeed:    1,

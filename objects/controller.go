@@ -1,7 +1,6 @@
 package objects
 
 import (
-	"log"
 	"main/camera"
 	"main/utils"
 	"math"
@@ -14,6 +13,14 @@ type Input struct {
 	AimTargetAngle float64
 	HasAim         bool
 	Fire           bool
+}
+
+type MechaContext struct {
+	Position      utils.Vector2
+	UpperRot      float64
+	UpperRotSpeed float64
+	LowerRot      float64
+	LowerRotSpeed float64
 }
 
 type WorldContext struct {
@@ -32,28 +39,88 @@ type ObjectInfo struct {
 	Distance float64
 }
 
-type Controller interface {
-	Update(utils.Vector2, WorldContext) Input
+type ClosestEnemy struct {
+	Found bool
+	Enemy ObjectInfo
 }
 
-type AIController struct{}
+type Controller interface {
+	Update(MechaContext, WorldContext) Input
+}
+
+type AIState int
+
+const (
+	CaptureTower AIState = iota
+	FightEnemy
+)
+
+type AIController struct {
+	State               AIState
+	Team                Team
+	TargetTowerLocation utils.Vector2
+}
 type PlayerController struct{}
 
-func (a *AIController) Update(position utils.Vector2, wc WorldContext) (inp Input) {
+func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 	// Should fire?
-	// If aiming at enemy, and in range
+	// If aiming approx at enemy, and in range
 
-	// Where to Aim?
-	// Are there enemies around?
+	// Where to try to Aim?
+	// Are there enemies around at all?
+	var enemy ClosestEnemy
+	for _, mecha := range wc.NearbyMecha {
+		if mecha.Team != a.Team {
+			if !enemy.Found {
+				enemy.Enemy = mecha
+				enemy.Found = true
+			} else if mecha.Distance < enemy.Enemy.Distance {
+				enemy.Enemy = mecha
+			}
+		}
+	}
+
+	if enemy.Found {
+		aim := enemy.Enemy.Position.Subbed(mc.Position)
+		if !aim.Equals(utils.Vector2Zero()) {
+			inp.HasAim = true
+			inp.AimTargetAngle = math.Atan2(aim.Y, aim.X)
+		}
+	}
 
 	// Should take tower?
+	closestTower := wc.NearbyTowers[0]
+	for _, tower := range wc.NearbyTowers {
+		if tower.Distance < closestTower.Distance {
+			closestTower = tower
+		}
+	}
 
-	log.Print(wc)
+	if closestTower.Team != a.Team && a.State != FightEnemy {
+		a.TargetTowerLocation = closestTower.Position
+	}
+
+	if a.State == CaptureTower {
+		turnDir := utils.RotateTowardsVectorFromVector(closestTower.Position, mc.Position, mc.LowerRot, mc.LowerRotSpeed)
+
+		if closestTower.Distance > 75 {
+			if turnDir < -0.02 {
+				inp.Move.X--
+			} else if turnDir > 0.02 {
+				inp.Move.X++
+			}
+
+			// Drive forward??
+			if math.Abs(turnDir) < .1 {
+				inp.Move.Y++
+			}
+		}
+	}
 
 	return
 }
 
-func (p *PlayerController) Update(position utils.Vector2, _ WorldContext) (inp Input) {
+func (p *PlayerController) Update(mc MechaContext, _ WorldContext) (inp Input) {
 	inp.Move = utils.Vector2{}
 	inp.Fire = false
 
@@ -84,7 +151,7 @@ func (p *PlayerController) Update(position utils.Vector2, _ WorldContext) (inp I
 		X: float64(mPosX) + cam.Position.X,
 		Y: float64(mPosY) + cam.Position.Y,
 	}
-	aim := mousePos.Subbed(position)
+	aim := mousePos.Subbed(mc.Position)
 
 	if !aim.Equals(utils.Vector2Zero()) {
 		inp.AimTargetAngle = math.Atan2(aim.Y, aim.X)
