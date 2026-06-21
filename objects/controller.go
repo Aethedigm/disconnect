@@ -21,6 +21,7 @@ type MechaContext struct {
 	UpperRotSpeed float64
 	LowerRot      float64
 	LowerRotSpeed float64
+	GunRange      float64
 }
 
 type WorldContext struct {
@@ -63,11 +64,6 @@ type AIController struct {
 type PlayerController struct{}
 
 func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
-	// Should fire?
-	// If aiming approx at enemy, and in range
-
-	// Where to try to Aim?
-	// Are there enemies around at all?
 	var enemy ClosestEnemy
 	for _, mecha := range wc.NearbyMecha {
 		if mecha.Team != a.Team {
@@ -86,11 +82,27 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 			inp.HasAim = true
 			inp.AimTargetAngle = math.Atan2(aim.Y, aim.X)
 		}
+
+		// Should fire?
+		// If aiming approx at enemy, and in range
+		if enemy.Enemy.Distance < mc.GunRange/3*2 {
+			// Enemy in range, engage
+			a.State = FightEnemy
+			// We will want to circle the enemy at ~ 2/3rds our gun range typically
+			if math.Abs(inp.AimTargetAngle-mc.UpperRot) < 0.2 {
+				inp.Fire = true
+			}
+		}
+	} else {
+		a.State = CaptureTower
 	}
 
 	// Should take tower?
 	closestTower := wc.NearbyTowers[0]
 	for _, tower := range wc.NearbyTowers {
+		if tower.Team == a.Team {
+			continue
+		}
 		if tower.Distance < closestTower.Distance {
 			closestTower = tower
 		}

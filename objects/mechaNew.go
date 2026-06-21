@@ -19,10 +19,7 @@ func NewEnemyMecha(position utils.Vector2) *Mecha {
 			DriveSpeed:    1,
 			RotationSpeed: 2 * math.Pi / 180,
 		},
-		UpperPart: MechaUpperPart{
-			Sprite:        utils.ImageDecode(data.TankTopOne),
-			RotationSpeed: 2 * math.Pi / 180,
-		},
+		UpperPart: NewMechaTopThree(),
 	}
 }
 
@@ -39,10 +36,7 @@ func NewFriendlyMecha(position utils.Vector2) *Mecha {
 			DriveSpeed:    1,
 			RotationSpeed: 2 * math.Pi / 180,
 		},
-		UpperPart: MechaUpperPart{
-			Sprite:        utils.ImageDecode(data.TankTopOne),
-			RotationSpeed: 2 * math.Pi / 180,
-		},
+		UpperPart: NewMechaTopOne(),
 	}
 }
 
