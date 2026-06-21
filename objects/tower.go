@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"main/camera"
 	"main/data"
 	"main/physics"
 	"main/utils"
@@ -44,7 +45,9 @@ func (t *Tower) Draw(screen *ebiten.Image) {
 	h := float64(bounds.Dy())
 
 	op.GeoM.Translate(-w/2, -h/2)
-	op.GeoM.Translate(t.Position.X, t.Position.Y)
+
+	cam := camera.GetCamera()
+	op.GeoM.Translate(t.Position.X-cam.Position.X, t.Position.Y-cam.Position.Y)
 
 	screen.DrawImage(t.Sprite, op)
 }

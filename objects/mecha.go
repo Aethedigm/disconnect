@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"main/camera"
 	"main/data"
 	"main/physics"
 	"main/utils"
@@ -17,6 +18,8 @@ type Mecha struct {
 
 	LowerPart MechaLowerPart
 	UpperPart MechaUpperPart
+
+	Health float64
 }
 
 type MechaLowerPart struct {
@@ -38,6 +41,7 @@ func NewEnemyMecha(position utils.Vector2) *Mecha {
 		Position:   position,
 		Controller: &AIEnemyController{},
 		Team:       TeamEnemy,
+		Health:     100,
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
 			DriveSpeed:    1,
@@ -55,6 +59,7 @@ func NewFriendlyMecha(position utils.Vector2) *Mecha {
 		Position:   position,
 		Controller: &AIFriendlyController{},
 		Team:       TeamFriendly,
+		Health:     100,
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.TankBottomOne),
 			DriveSpeed:    1,
@@ -72,6 +77,7 @@ func NewPlayerMecha(position utils.Vector2) *Mecha {
 		Position:   position,
 		Controller: &PlayerController{},
 		Team:       TeamFriendly,
+		Health:     100,
 		LowerPart: MechaLowerPart{
 			Sprite:        utils.ImageDecode(data.MechaBottomLegs),
 			DriveSpeed:    1,
@@ -134,6 +140,9 @@ func (m *Mecha) Update() (res UpdateResult) {
 		m.UpperPart.Guns[i].Update()
 	}
 
+	// Destroyed
+	res.Destroy = m.Health < 1
+
 	return
 }
 
@@ -146,7 +155,9 @@ func drawPart(screen, sprite *ebiten.Image, pos utils.Vector2, rot float64) {
 
 	op.GeoM.Translate(-w/2, -h/2)
 	op.GeoM.Rotate(rot)
-	op.GeoM.Translate(pos.X, pos.Y)
+
+	cam := camera.GetCamera()
+	op.GeoM.Translate(pos.X-cam.Position.X, pos.Y-cam.Position.Y)
 
 	screen.DrawImage(sprite, op)
 }
@@ -171,4 +182,8 @@ func (m *Mecha) Move(delta utils.Vector2) {
 
 func (m *Mecha) TeamOwned() Team {
 	return m.Team
+}
+
+func (m *Mecha) ApplyDamage(amount float64) {
+	m.Health -= amount
 }

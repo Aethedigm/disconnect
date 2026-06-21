@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"main/camera"
 	"main/utils"
 	"math"
 
@@ -56,7 +57,11 @@ func (p *PlayerController) Update(position utils.Vector2) (inp Input) {
 
 	// Set turn target angle
 	mPosX, mPosY := ebiten.CursorPosition()
-	mousePos := utils.Vector2{X: float64(mPosX), Y: float64(mPosY)}
+	cam := camera.GetCamera()
+	mousePos := utils.Vector2{
+		X: float64(mPosX) + cam.Position.X,
+		Y: float64(mPosY) + cam.Position.Y,
+	}
 	aim := mousePos.Subbed(position)
 
 	if !aim.Equals(utils.Vector2Zero()) {

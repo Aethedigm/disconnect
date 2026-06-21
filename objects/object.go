@@ -29,3 +29,9 @@ type Capturer interface {
 	TeamOwned() Team
 	Collider() physics.CircleCollider
 }
+
+type DamageTarget interface {
+	DynamicCollisions
+	HasTeam
+	ApplyDamage(amount float64)
+}

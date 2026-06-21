@@ -2,6 +2,7 @@ package scenes
 
 import (
 	"image/color"
+	"main/camera"
 	"main/objects"
 	"main/physics"
 	"main/utils"
@@ -17,15 +18,24 @@ type GameplayScene struct {
 	capturers         []objects.Capturer
 	towers            []*objects.Tower
 	projectiles       []objects.Projectile
+
+	Cam         *camera.Camera
+	PlayerMecha *objects.Mecha
 }
 
 func NewGameplayScene() *GameplayScene {
 	gScene := &GameplayScene{}
 
+	gScene.Cam = camera.GetCamera()
+
 	ebiten.SetCursorMode(ebiten.CursorModeHidden)
 	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 100, Y: 100}))
 	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 500, Y: 300}))
-	gScene.addObject(objects.NewPlayerMecha(utils.Vector2{X: 30, Y: 30}))
+
+	pMecha := objects.NewPlayerMecha(utils.Vector2{X: 30, Y: 30})
+	gScene.addObject(pMecha)
+	gScene.PlayerMecha = pMecha
+
 	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 800, Y: 350}))
 	gScene.addObject(objects.NewCursor())
 
@@ -70,6 +80,7 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 			destroyed = append(destroyed, g.gameObjects[i])
 		}
 	}
+	g.Cam.Move(g.PlayerMecha.Position)
 
 	// Dynamic vs Static: Push Dynamic Away
 	for _, dynamic := range g.dynamicCollisions {
@@ -119,6 +130,10 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 			if !val.Equals(utils.Vector2Zero()) {
 				// Do some kind of damage to the dynamic object
 				g.projectiles[i].Destroy()
+
+				if damageTaker, ok := g.dynamicCollisions[j].(objects.DamageTarget); ok {
+					damageTaker.ApplyDamage(g.projectiles[i].ProjectileDamage())
+				}
 			}
 		}
 	}

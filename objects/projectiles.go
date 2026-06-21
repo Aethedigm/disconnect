@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"main/camera"
 	"main/data"
 	"main/physics"
 	"main/utils"
@@ -81,7 +82,9 @@ func (b *Bullet) Draw(screen *ebiten.Image) {
 
 	op.GeoM.Translate(float64(-w/2), float64(-h/2))
 	op.GeoM.Rotate(b.Angle)
-	op.GeoM.Translate(b.Position.X, b.Position.Y)
+
+	cam := camera.GetCamera()
+	op.GeoM.Translate(b.Position.X-cam.Position.X, b.Position.Y-cam.Position.Y)
 
 	screen.DrawImage(b.Sprite, op)
 }
