@@ -1,7 +1,10 @@
 package main
 
 import (
+	"main/camera"
 	"main/scenes"
+	"main/utils"
+	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -26,5 +29,20 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return outsideWidth, outsideHeight
+	h := float64(outsideHeight)
+
+	if h > 480 {
+		h = 480
+	}
+
+	asp := float64(outsideWidth) / float64(outsideHeight)
+
+	w := math.Min(asp*h, h*4)
+
+	camera.GetCamera().Bounds = utils.Vector2{
+		X: w,
+		Y: h,
+	}
+
+	return int(w), int(h)
 }

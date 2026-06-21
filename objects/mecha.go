@@ -2,7 +2,6 @@ package objects
 
 import (
 	"main/camera"
-	"main/data"
 	"main/physics"
 	"main/utils"
 	"math"
@@ -20,94 +19,12 @@ type Mecha struct {
 	UpperPart MechaUpperPart
 
 	Health float64
-}
 
-type MechaLowerPart struct {
-	Sprite        *ebiten.Image
-	Rotation      float64
-	RotationSpeed float64
-	DriveSpeed    float64 // Forward/Backward speed
-}
-
-type MechaUpperPart struct {
-	Sprite        *ebiten.Image
-	Rotation      float64
-	RotationSpeed float64
-	Guns          []GunMount
-}
-
-func NewEnemyMecha(position utils.Vector2) *Mecha {
-	return &Mecha{
-		Position:   position,
-		Controller: &AIEnemyController{},
-		Team:       TeamEnemy,
-		Health:     100,
-		LowerPart: MechaLowerPart{
-			Sprite:        utils.ImageDecode(data.TankBottomOne),
-			DriveSpeed:    1,
-			RotationSpeed: 2 * math.Pi / 180,
-		},
-		UpperPart: MechaUpperPart{
-			Sprite:        utils.ImageDecode(data.TankTopOne),
-			RotationSpeed: 2 * math.Pi / 180,
-		},
-	}
-}
-
-func NewFriendlyMecha(position utils.Vector2) *Mecha {
-	return &Mecha{
-		Position:   position,
-		Controller: &AIFriendlyController{},
-		Team:       TeamFriendly,
-		Health:     100,
-		LowerPart: MechaLowerPart{
-			Sprite:        utils.ImageDecode(data.TankBottomOne),
-			DriveSpeed:    1,
-			RotationSpeed: 2 * math.Pi / 180,
-		},
-		UpperPart: MechaUpperPart{
-			Sprite:        utils.ImageDecode(data.TankTopOne),
-			RotationSpeed: 2 * math.Pi / 180,
-		},
-	}
-}
-
-func NewPlayerMecha(position utils.Vector2) *Mecha {
-	return &Mecha{
-		Position:   position,
-		Controller: &PlayerController{},
-		Team:       TeamFriendly,
-		Health:     100,
-		LowerPart: MechaLowerPart{
-			Sprite:        utils.ImageDecode(data.MechaBottomLegs),
-			DriveSpeed:    1,
-			RotationSpeed: 2 * math.Pi / 180,
-		},
-		UpperPart: MechaUpperPart{
-			Sprite:        utils.ImageDecode(data.MechaTop),
-			RotationSpeed: 2 * math.Pi / 180,
-			Guns: []GunMount{
-				{
-					LocalPosition: utils.Vector2{X: 32, Y: 7},
-					LocalRotation: 0,
-					Weapon: &Weapon{
-						FireRate: 10,
-					},
-				},
-				{
-					LocalPosition: utils.Vector2{X: 32, Y: -7},
-					LocalRotation: 0,
-					Weapon: &Weapon{
-						FireRate: 10,
-					},
-				},
-			},
-		},
-	}
+	wc WorldContext
 }
 
 func (m *Mecha) Update() (res UpdateResult) {
-	inp := m.Controller.Update(m.Position)
+	inp := m.Controller.Update(m.Position, m.wc)
 
 	if inp.Move.Length() > 1 {
 		inp.Move = inp.Move.Normalized()
@@ -186,4 +103,13 @@ func (m *Mecha) TeamOwned() Team {
 
 func (m *Mecha) ApplyDamage(amount float64) {
 	m.Health -= amount
+}
+
+func (m *Mecha) SetWorldContext(wc WorldContext) {
+	m.wc = wc
+
+	m.wc.SelfPosition = m.Position
+	m.wc.SelfTeam = m.Team
+	m.wc.SelfLowerRot = m.LowerPart.Rotation
+	m.wc.SelfUpperRot = m.UpperPart.Rotation
 }

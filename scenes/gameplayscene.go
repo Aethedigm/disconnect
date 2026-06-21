@@ -68,11 +68,49 @@ func (g *GameplayScene) addObject(obj objects.GameObject) {
 	}
 }
 
+func (g *GameplayScene) buildWorldContext(mecha *objects.Mecha) objects.WorldContext {
+	var wc objects.WorldContext
+
+	// Loop Dynamic
+	for _, dynamic := range g.dynamicCollisions {
+		// Only Mechas
+		obj, ok := dynamic.(*objects.Mecha)
+		if !ok || obj == mecha {
+			continue
+		}
+
+		delta := obj.Position.Subbed(mecha.Position)
+		wc.NearbyMecha = append(wc.NearbyMecha, objects.ObjectInfo{
+			Position: obj.Position,
+			Team:     obj.TeamOwned(),
+			Distance: delta.Length(),
+		})
+	}
+
+	// Loop Towers
+	for _, tower := range g.towers {
+		delta := tower.Position.Subbed(mecha.Position)
+		wc.NearbyTowers = append(wc.NearbyTowers, objects.ObjectInfo{
+			Position: tower.Position,
+			Team:     tower.TeamOwned(),
+			Distance: delta.Length(),
+		})
+	}
+
+	return wc
+}
+
 func (g *GameplayScene) Update(controller *SceneController) error {
 	var spawned []objects.GameObject
 	var destroyed []objects.GameObject
 
 	for i := range g.gameObjects {
+		if mecha, ok := g.gameObjects[i].(*objects.Mecha); ok {
+			mecha.SetWorldContext(
+				g.buildWorldContext(mecha),
+			)
+		}
+
 		res := g.gameObjects[i].Update()
 		spawned = append(spawned, res.Spawn...)
 
@@ -108,6 +146,9 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 
 	// Projectiles vs Dynamic+Static
 	for i := range g.projectiles {
+		if g.projectiles[i].IsDestroyed() {
+			continue
+		}
 
 		// Static just destroys the projectile
 		// TODO: Trigger explosion still from rockets?

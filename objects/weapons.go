@@ -7,26 +7,36 @@ import (
 type Weapon struct {
 	FireRate     float64
 	FireCooldown float64
+	Damage       float64
+	Range        float64
+	Speed        float64
 }
 
-type GunMount struct {
-	LocalPosition utils.Vector2
-	LocalRotation float64
-	Weapon        *Weapon
-	AmmoCount     int
-}
-
-func (g *GunMount) Update() {
-	if g.Weapon.FireCooldown > 0 {
-		g.Weapon.FireCooldown--
+func NewAutoGun() *Weapon {
+	return &Weapon{
+		FireRate: 10,
+		Damage:   1,
+		Range:    500,
+		Speed:    10,
 	}
 }
 
-func (g *GunMount) Fire(mechaPos utils.Vector2, upperRot float64, team Team) []GameObject {
-	offset := g.LocalPosition.Rotated(upperRot)
-	offset.Add(mechaPos)
+func NewRocketLauncher() *Weapon {
+	return &Weapon{
+		FireRate: 1000,
+		Damage:   30,
+		Range:    950,
+		Speed:    50,
+	}
+}
 
-	return g.Weapon.Fire(offset, upperRot+g.LocalRotation, team)
+func NewSniper() *Weapon {
+	return &Weapon{
+		FireRate: 60,
+		Damage:   25,
+		Range:    5000,
+		Speed:    50,
+	}
 }
 
 func (w *Weapon) Fire(pos utils.Vector2, rot float64, team Team) []GameObject {
@@ -35,7 +45,7 @@ func (w *Weapon) Fire(pos utils.Vector2, rot float64, team Team) []GameObject {
 	if w.FireCooldown <= 0 {
 		w.FireCooldown = w.FireRate
 		projectiles = append(projectiles, NewBullet(
-			1, 500, 10, rot, pos, team,
+			w.Damage, w.Range, w.Speed, rot, pos, team,
 		))
 	}
 

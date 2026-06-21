@@ -16,6 +16,7 @@ type Projectile interface {
 	Collider() physics.CircleCollider
 	ProjectileDamage() float64
 	Destroy()
+	IsDestroyed() bool
 }
 
 type Bullet struct {
@@ -106,4 +107,8 @@ func (b *Bullet) ProjectileDamage() float64 {
 
 func (b *Bullet) Destroy() {
 	b.bShouldDestroy = true
+}
+
+func (b *Bullet) IsDestroyed() bool {
+	return b.bShouldDestroy
 }
