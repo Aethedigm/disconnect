@@ -32,8 +32,8 @@ func NewRocketLauncher() *Weapon {
 
 func NewSniper() *Weapon {
 	return &Weapon{
-		FireRate: 60,
-		Damage:   25,
+		FireRate: 75,
+		Damage:   18,
 		Range:    5000,
 		Speed:    50,
 	}
