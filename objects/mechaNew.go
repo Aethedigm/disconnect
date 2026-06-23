@@ -1,9 +1,7 @@
 package objects
 
 import (
-	"main/data"
 	"main/utils"
-	"math"
 )
 
 func NewEnemyMecha(position utils.Vector2) *Mecha {
@@ -12,13 +10,9 @@ func NewEnemyMecha(position utils.Vector2) *Mecha {
 		Controller: &AIController{
 			Team: TeamEnemy,
 		},
-		Team:   TeamEnemy,
-		Health: 100,
-		LowerPart: MechaLowerPart{
-			Sprite:        utils.ImageDecode(data.TankBottomOne),
-			DriveSpeed:    1,
-			RotationSpeed: 2 * math.Pi / 180,
-		},
+		Team:      TeamEnemy,
+		Health:    100,
+		LowerPart: NewMechaBottomTwo(),
 		UpperPart: NewMechaTopThree(),
 	}
 }
@@ -29,13 +23,9 @@ func NewFriendlyMecha(position utils.Vector2) *Mecha {
 		Controller: &AIController{
 			Team: TeamFriendly,
 		},
-		Team:   TeamFriendly,
-		Health: 100,
-		LowerPart: MechaLowerPart{
-			Sprite:        utils.ImageDecode(data.TankBottomOne),
-			DriveSpeed:    1,
-			RotationSpeed: 2 * math.Pi / 180,
-		},
+		Team:      TeamFriendly,
+		Health:    100,
+		LowerPart: NewMechaBottomTwo(),
 		UpperPart: NewMechaTopOne(),
 	}
 }

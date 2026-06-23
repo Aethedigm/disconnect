@@ -57,9 +57,8 @@ const (
 )
 
 type AIController struct {
-	State               AIState
-	Team                Team
-	TargetTowerLocation utils.Vector2
+	State AIState
+	Team  Team
 }
 type PlayerController struct{}
 
@@ -106,10 +105,6 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 		if tower.Distance < closestTower.Distance {
 			closestTower = tower
 		}
-	}
-
-	if closestTower.Team != a.Team && a.State != FightEnemy {
-		a.TargetTowerLocation = closestTower.Position
 	}
 
 	if a.State == CaptureTower {

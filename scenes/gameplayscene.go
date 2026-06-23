@@ -156,6 +156,7 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 			val := physics.ResolveCircleOverlap(g.projectiles[i].Collider(), static.Collider())
 			if !val.Equals(utils.Vector2Zero()) {
 				g.projectiles[i].Destroy()
+				break
 			}
 		}
 
@@ -167,6 +168,10 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 				}
 			}
 
+			if g.projectiles[i].IsDestroyed() {
+				continue
+			}
+
 			val := physics.ResolveCircleOverlap(g.projectiles[i].Collider(), g.dynamicCollisions[j].Collider())
 			if !val.Equals(utils.Vector2Zero()) {
 				// Do some kind of damage to the dynamic object
@@ -175,6 +180,7 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 				if damageTaker, ok := g.dynamicCollisions[j].(objects.DamageTarget); ok {
 					damageTaker.ApplyDamage(g.projectiles[i].ProjectileDamage())
 				}
+				break
 			}
 		}
 	}
