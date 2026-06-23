@@ -10,6 +10,12 @@ func Vector2Zero() Vector2 {
 	return Vector2{X: 0, Y: 0}
 }
 
+func (v *Vector2) DistanceTo(res Vector2) float64 {
+	dX := res.X - v.X
+	dY := res.Y - v.Y
+	return math.Sqrt(dX*dX + dY*dY)
+}
+
 func (v *Vector2) LengthSquared() float64 {
 	return v.X*v.X + v.Y*v.Y
 }
@@ -33,6 +39,13 @@ func (v *Vector2) Normalized() Vector2 {
 
 func (v *Vector2) Dot(res Vector2) float64 {
 	return v.X*res.X + v.Y*res.Y
+}
+
+func (v *Vector2) Added(res Vector2) (val Vector2) {
+	val.X = v.X + res.X
+	val.Y = v.Y + res.Y
+
+	return
 }
 
 func (v *Vector2) Subbed(res Vector2) (val Vector2) {

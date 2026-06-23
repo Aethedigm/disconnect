@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"log"
 	"main/camera"
 	"main/utils"
 	"math"
@@ -43,11 +44,6 @@ type ObjectInfo struct {
 	Progress float64
 }
 
-type ClosestEnemy struct {
-	Found bool
-	Enemy ObjectInfo
-}
-
 type Controller interface {
 	Update(MechaContext, WorldContext) Input
 }
@@ -57,6 +53,7 @@ type AIState int
 const (
 	CaptureTower AIState = iota
 	FightEnemy
+	FleeEnemies
 	Wander
 )
 
@@ -64,19 +61,66 @@ type AIController struct {
 	State              AIState
 	Team               Team
 	TargetTravelVector utils.Vector2
+	TargetTravelTime   int
+	TargetEnemy        *ObjectInfo
 }
 type PlayerController struct{}
 
-func GetClosestEnemy(wc WorldContext, a *AIController) (enemy ClosestEnemy) {
+func GetMechaBreakdowns(wc WorldContext, a *AIController) (enemies, friendlies []*ObjectInfo, enemyFound bool) {
 	for _, mecha := range wc.NearbyMecha {
-		if mecha.Team != a.Team {
-			if !enemy.Found {
-				enemy.Enemy = mecha
-				enemy.Found = true
-			} else if mecha.Distance < enemy.Enemy.Distance {
-				enemy.Enemy = mecha
+		if mecha.Team == a.Team {
+			friendlies = append(friendlies, &mecha)
+		} else {
+			enemies = append(enemies, &mecha)
+			enemyFound = true
+		}
+	}
+
+	return
+}
+
+func GetBestTower(wc WorldContext, mc MechaContext, a *AIController) (bestTower *ObjectInfo, towerFound bool) {
+	var closestTower *ObjectInfo
+
+	for _, tower := range wc.NearbyTowers {
+		if tower.Position.DistanceTo(mc.Position) < 80 && (tower.Team != a.Team || (tower.Team == a.Team && tower.Progress < 750)) {
+			// We're here
+			// Our Team Owns it and we need more progress
+			// Our team doesn't own it
+			bestTower = &tower
+			towerFound = true
+
+			return
+		}
+	}
+
+	for _, tower := range wc.NearbyTowers {
+		if tower.Team == a.Team {
+			if tower.Progress > 750 {
+				continue
+			} else {
+				bestTower = &tower
+				towerFound = true
+				continue
+			}
+		} else {
+
+		}
+
+		if bestTower == nil {
+			if closestTower == nil {
+				closestTower = &tower
+			}
+
+			if tower.Distance < closestTower.Distance {
+				closestTower = &tower
 			}
 		}
+	}
+
+	if bestTower == nil && closestTower != nil {
+		bestTower = closestTower
+		towerFound = true
 	}
 
 	return
@@ -99,13 +143,20 @@ func GetClosestTower(wc WorldContext, a *AIController) (closestTower *ObjectInfo
 }
 
 // TODO: Replace AIController.Update()
-func (a *AIController) StateMachine(mc MechaContext, wc WorldContext) (inp Input) {
-	enemy := GetClosestEnemy(wc, a)
-	_ = GetClosestTower(wc, a)
+func (a *AIController) StateMachine(mc MechaContext, wc WorldContext) (enemies, friendlies []*ObjectInfo, bestTower *ObjectInfo) {
+	enemyFound, towerFound := false, false
+
+	enemies, friendlies, enemyFound = GetMechaBreakdowns(wc, a)
+	bestTower, towerFound = GetBestTower(wc, mc, a)
 
 	switch {
-	case enemy.Found:
+	// case enemyFound && len(enemies) > len(friendlies)+1:
+	case enemyFound && mc.Health < 25 && len(friendlies) == 0:
+		a.State = FleeEnemies
+	case enemyFound:
 		a.State = FightEnemy
+	case towerFound:
+		a.State = CaptureTower
 	default:
 		a.State = Wander
 	}
@@ -113,76 +164,94 @@ func (a *AIController) StateMachine(mc MechaContext, wc WorldContext) (inp Input
 	return
 }
 
-func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
-	enemy := GetClosestEnemy(wc, a)
-	closestTower := GetClosestTower(wc, a)
+func AimAtEnemy(pos1, pos2 utils.Vector2, inp *Input) {
+	aim := pos1.Subbed(pos2)
+	if !aim.Equals(utils.Vector2Zero()) {
+		inp.HasAim = true
+		inp.AimTargetAngle = math.Atan2(aim.Y, aim.X)
+	}
+}
 
-	if enemy.Found {
-		aim := enemy.Enemy.Position.Subbed(mc.Position)
-		if !aim.Equals(utils.Vector2Zero()) {
-			inp.HasAim = true
-			inp.AimTargetAngle = math.Atan2(aim.Y, aim.X)
+func Contains(o []*ObjectInfo, t *ObjectInfo) bool {
+	for _, obj := range o {
+		if obj == t {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
+	a.TargetTravelTime--
+	enemies, _, bestTower := a.StateMachine(mc, wc)
+
+	if a.State == FleeEnemies {
+		log.Println("Want to flee enemies")
+		// run generally away?
+	}
+
+	if a.State == FightEnemy {
+		log.Println("Want to fight enemies")
+		if !Contains(enemies, a.TargetEnemy) {
+			// Remove target if not in context anymore
+			a.TargetEnemy = nil
 		}
 
-		// Should fire?
-		// If aiming approx at enemy, and in range
-		if enemy.Enemy.Distance < mc.GunRange/3*2 {
-			// Enemy in range, engage
-			a.State = FightEnemy
-			// We will want to circle the enemy at ~ 2/3rds our gun range typically
+		if a.TargetEnemy == nil {
+			// Select target randomly from context
+			a.TargetEnemy = enemies[rand.Intn(len(enemies))]
+		}
+
+		AimAtEnemy(a.TargetEnemy.Position, mc.Position, &inp)
+
+		if a.TargetEnemy.Distance < mc.GunRange/3*2 {
 			if math.Abs(inp.AimTargetAngle-mc.UpperRot) < 0.2 {
 				inp.Fire = true
 			}
 		}
 
-		if enemy.Enemy.Distance < mc.GunRange && mc.Health < 40 {
-			// Disengage
-			pos := enemy.Enemy.Position.Subbed(mc.Position)
-			turnDir := math.Atan2(pos.Y, pos.X)
-
-			if turnDir < -0.02 {
-				inp.Move.X--
-			} else if turnDir > 0.02 {
-				inp.Move.X++
-			}
-
-			inp.Move.Y++
+		// Set Target Vector for Travel
+		// Set arbitrary point within range of enemy
+		offset := utils.Vector2{
+			X: rand.Float64()*500 - 250,
+			Y: rand.Float64()*500 - 250,
 		}
 
-	} else {
-		a.State = CaptureTower
-	}
-
-	if closestTower != nil {
-		if closestTower.Progress > 500 && closestTower.Team == a.Team {
-			a.State = Wander
+		if mc.Position.DistanceTo(a.TargetTravelVector) < 35 || a.TargetTravelTime <= 0 {
+			a.TargetTravelVector = a.TargetEnemy.Position.Added(offset)
+			a.TargetTravelTime = 30
 		}
-	} else {
-		a.State = Wander
 	}
 
 	if a.State == CaptureTower {
-		turnDir := utils.RotateTowardsVectorFromVector(closestTower.Position, mc.Position, mc.LowerRot, mc.LowerRotSpeed)
-
-		if closestTower.Distance > 75 {
-			if turnDir < -0.02 {
-				inp.Move.X--
-			} else if turnDir > 0.02 {
-				inp.Move.X++
-			}
-
-			// Drive forward??
-			if math.Abs(turnDir) < .1 {
-				inp.Move.Y++
-			}
+		log.Println("Want to capture tower")
+		if a.TargetTravelTime <= 0 {
+			a.TargetTravelVector = bestTower.Position
+			a.TargetTravelTime = 120
 		}
 	}
 
 	if a.State == Wander {
-		inp.Move.Y++
-		RandomMovement(&inp)
+		log.Println("Want to wander")
 	}
 
+	// Move towards target travel vector
+	turnDir := utils.RotateTowardsVectorFromVector(a.TargetTravelVector, mc.Position, mc.LowerRot, mc.LowerRotSpeed)
+	targetTravelDistance := mc.Position.DistanceTo(a.TargetTravelVector)
+
+	if targetTravelDistance > 10 {
+		if turnDir < -0.02 {
+			inp.Move.X--
+		} else if turnDir > 0.02 {
+			inp.Move.X++
+		}
+
+		// Drive forward??
+		if math.Abs(turnDir) < .1 {
+			inp.Move.Y++
+		}
+	}
 	return
 }
 

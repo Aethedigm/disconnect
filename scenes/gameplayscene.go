@@ -95,11 +95,14 @@ func (g *GameplayScene) buildWorldContext(mecha *objects.Mecha) objects.WorldCon
 		}
 
 		delta := obj.Position.Subbed(mecha.Position)
-		wc.NearbyMecha = append(wc.NearbyMecha, objects.ObjectInfo{
-			Position: obj.Position,
-			Team:     obj.TeamOwned(),
-			Distance: delta.Length(),
-		})
+		delLength := delta.Length()
+		if delLength < 350 {
+			wc.NearbyMecha = append(wc.NearbyMecha, objects.ObjectInfo{
+				Position: obj.Position,
+				Team:     obj.TeamOwned(),
+				Distance: delLength,
+			})
+		}
 	}
 
 	// Loop Towers
