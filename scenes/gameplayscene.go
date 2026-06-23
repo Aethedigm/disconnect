@@ -30,13 +30,28 @@ func NewGameplayScene() *GameplayScene {
 
 	ebiten.SetCursorMode(ebiten.CursorModeHidden)
 	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 100, Y: 100}))
-	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 500, Y: 300}))
+	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 000, Y: 000}))
+	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 100, Y: 000}))
+	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 000, Y: 100}))
+
+	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 1100, Y: 1100}))
+	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 1200, Y: 1100}))
+	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 1100, Y: 1200}))
+	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 1200, Y: 1200}))
+	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 1300, Y: 1300}))
 
 	pMecha := objects.NewPlayerMecha(utils.Vector2{X: 30, Y: 30})
 	gScene.addObject(pMecha)
 	gScene.PlayerMecha = pMecha
 
-	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 800, Y: 350}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 200, Y: 200}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 1000, Y: 1000}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 200, Y: 1000}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 1000, Y: 200}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 650, Y: 200}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 200, Y: 650}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 1000, Y: 650}))
+	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 650, Y: 1000}))
 	gScene.addObject(objects.NewCursor())
 
 	return gScene
@@ -94,6 +109,7 @@ func (g *GameplayScene) buildWorldContext(mecha *objects.Mecha) objects.WorldCon
 			Position: tower.Position,
 			Team:     tower.TeamOwned(),
 			Distance: delta.Length(),
+			Progress: tower.CaptureProgress,
 		})
 	}
 

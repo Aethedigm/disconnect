@@ -4,6 +4,7 @@ import (
 	"main/camera"
 	"main/utils"
 	"math"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -22,6 +23,7 @@ type MechaContext struct {
 	LowerRot      float64
 	LowerRotSpeed float64
 	GunRange      float64
+	Health        float64
 }
 
 type WorldContext struct {
@@ -38,6 +40,7 @@ type ObjectInfo struct {
 	Position utils.Vector2
 	Team     Team
 	Distance float64
+	Progress float64
 }
 
 type ClosestEnemy struct {
@@ -54,16 +57,17 @@ type AIState int
 const (
 	CaptureTower AIState = iota
 	FightEnemy
+	Wander
 )
 
 type AIController struct {
-	State AIState
-	Team  Team
+	State              AIState
+	Team               Team
+	TargetTravelVector utils.Vector2
 }
 type PlayerController struct{}
 
-func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
-	var enemy ClosestEnemy
+func GetClosestEnemy(wc WorldContext, a *AIController) (enemy ClosestEnemy) {
 	for _, mecha := range wc.NearbyMecha {
 		if mecha.Team != a.Team {
 			if !enemy.Found {
@@ -74,6 +78,44 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 			}
 		}
 	}
+
+	return
+}
+
+func GetClosestTower(wc WorldContext, a *AIController) (closestTower *ObjectInfo) {
+	// Should take tower?
+	// NOTE: There will never be 0 towers. This game is all about Tower capture
+	for i := range wc.NearbyTowers {
+		if wc.NearbyTowers[i].Team == a.Team && wc.NearbyTowers[i].Progress > 500 {
+			continue
+		}
+
+		if closestTower == nil || wc.NearbyTowers[i].Distance < closestTower.Distance {
+			closestTower = &wc.NearbyTowers[i]
+		}
+	}
+
+	return
+}
+
+// TODO: Replace AIController.Update()
+func (a *AIController) StateMachine(mc MechaContext, wc WorldContext) (inp Input) {
+	enemy := GetClosestEnemy(wc, a)
+	_ = GetClosestTower(wc, a)
+
+	switch {
+	case enemy.Found:
+		a.State = FightEnemy
+	default:
+		a.State = Wander
+	}
+
+	return
+}
+
+func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
+	enemy := GetClosestEnemy(wc, a)
+	closestTower := GetClosestTower(wc, a)
 
 	if enemy.Found {
 		aim := enemy.Enemy.Position.Subbed(mc.Position)
@@ -92,19 +134,31 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 				inp.Fire = true
 			}
 		}
+
+		if enemy.Enemy.Distance < mc.GunRange && mc.Health < 40 {
+			// Disengage
+			pos := enemy.Enemy.Position.Subbed(mc.Position)
+			turnDir := math.Atan2(pos.Y, pos.X)
+
+			if turnDir < -0.02 {
+				inp.Move.X--
+			} else if turnDir > 0.02 {
+				inp.Move.X++
+			}
+
+			inp.Move.Y++
+		}
+
 	} else {
 		a.State = CaptureTower
 	}
 
-	// Should take tower?
-	closestTower := wc.NearbyTowers[0]
-	for _, tower := range wc.NearbyTowers {
-		if tower.Team == a.Team {
-			continue
+	if closestTower != nil {
+		if closestTower.Progress > 500 && closestTower.Team == a.Team {
+			a.State = Wander
 		}
-		if tower.Distance < closestTower.Distance {
-			closestTower = tower
-		}
+	} else {
+		a.State = Wander
 	}
 
 	if a.State == CaptureTower {
@@ -124,7 +178,21 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 		}
 	}
 
+	if a.State == Wander {
+		inp.Move.Y++
+		RandomMovement(&inp)
+	}
+
 	return
+}
+
+func RandomMovement(inp *Input) {
+	val := rand.Float64()
+	if val < 0.4 {
+		inp.Move.X--
+	} else if val > 0.6 {
+		inp.Move.X++
+	}
 }
 
 func (p *PlayerController) Update(mc MechaContext, _ WorldContext) (inp Input) {

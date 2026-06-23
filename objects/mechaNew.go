@@ -12,8 +12,8 @@ func NewEnemyMecha(position utils.Vector2) *Mecha {
 		},
 		Team:      TeamEnemy,
 		Health:    100,
-		LowerPart: NewMechaBottomTwo(),
-		UpperPart: NewMechaTopThree(),
+		LowerPart: NewMechaBottomOne(),
+		UpperPart: NewMechaTopOne(),
 	}
 }
 
@@ -25,7 +25,7 @@ func NewFriendlyMecha(position utils.Vector2) *Mecha {
 		},
 		Team:      TeamFriendly,
 		Health:    100,
-		LowerPart: NewMechaBottomTwo(),
+		LowerPart: NewMechaBottomOne(),
 		UpperPart: NewMechaTopOne(),
 	}
 }

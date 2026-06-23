@@ -31,6 +31,7 @@ func (m *Mecha) Update() (res UpdateResult) {
 		LowerRot:      m.LowerPart.Rotation,
 		LowerRotSpeed: m.LowerPart.RotationSpeed,
 		GunRange:      m.UpperPart.Guns[0].Weapon.Range,
+		Health:        m.Health,
 	}
 	inp := m.Controller.Update(mc, m.wc)
 
