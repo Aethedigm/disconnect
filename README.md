@@ -6,11 +6,9 @@ On Start, game will launch into Main Menu. From Main Menu the options available 
 
 Sortie Select will list missions available, after picking a mission will allow you to customize your Mecha with a top/bottom selector
 
-## TODO
-Friendly AI  
-Enemy AI  
+## TODO  
+AI  
 Win Conditions  
-Loss Conditions  
 Communications  
 Minimap  
 More Weapons/Mecha Parts  
