@@ -122,3 +122,14 @@ func (m *Mecha) SetWorldContext(wc WorldContext) {
 	m.wc.SelfLowerRot = m.LowerPart.Rotation
 	m.wc.SelfUpperRot = m.UpperPart.Rotation
 }
+
+func (m *Mecha) HasRadio() bool {
+	return m.UpperPart.RadioRange > 0
+}
+
+func (m *Mecha) RadioCollider() physics.CircleCollider {
+	return physics.CircleCollider{
+		Center: m.Position,
+		Radius: m.UpperPart.RadioRange,
+	}
+}

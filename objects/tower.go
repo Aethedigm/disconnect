@@ -76,3 +76,7 @@ func (t *Tower) CaptureCollider() physics.CircleCollider {
 func (t *Tower) TeamOwned() Team {
 	return t.Team
 }
+
+func (t *Tower) HasRadio() bool {
+	return true
+}

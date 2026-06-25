@@ -13,6 +13,7 @@ type MechaUpperPart struct {
 	Rotation      float64
 	RotationSpeed float64
 	Guns          []GunMount
+	RadioRange    float64
 }
 
 // MechaTopOne is a dual Autogunner
@@ -62,6 +63,21 @@ func NewMechaTopThree() MechaUpperPart {
 				Weapon:        NewSniper(),
 			},
 		},
+	}
+}
+
+// MechaTopFour is a Commander Unit
+func NewMechaTopFour() MechaUpperPart {
+	return MechaUpperPart{
+		Sprite:        utils.ImageDecode(data.MechaTopCommander),
+		RotationSpeed: 2 * math.Pi / 180,
+		Guns: []GunMount{
+			{
+				LocalPosition: utils.Vector2{X: 40, Y: 0},
+				Weapon:        NewAutoGun(),
+			},
+		},
+		RadioRange: 300,
 	}
 }
 

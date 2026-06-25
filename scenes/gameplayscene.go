@@ -78,7 +78,7 @@ func (g *GameplayScene) addObject(obj objects.GameObject) {
 		g.towers = append(g.towers, tower)
 	}
 
-	if radioCollider, ok := obj.(objects.RadioNode); ok {
+	if radioCollider, ok := obj.(objects.RadioNode); ok && radioCollider.HasRadio() {
 		g.radioCollisions = append(g.radioCollisions, radioCollider)
 	}
 }

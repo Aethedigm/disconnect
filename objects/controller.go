@@ -103,8 +103,6 @@ func GetBestTower(wc WorldContext, mc MechaContext, a *AIController) (bestTower 
 				towerFound = true
 				continue
 			}
-		} else {
-
 		}
 
 		if bestTower == nil {
@@ -150,7 +148,6 @@ func (a *AIController) StateMachine(mc MechaContext, wc WorldContext) (enemies, 
 	bestTower, towerFound = GetBestTower(wc, mc, a)
 
 	switch {
-	// case enemyFound && len(enemies) > len(friendlies)+1:
 	case enemyFound && mc.Health < 25 && len(friendlies) == 0:
 		a.State = FleeEnemies
 	case enemyFound:

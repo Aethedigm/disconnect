@@ -21,12 +21,13 @@ type HasTeam interface {
 }
 
 type RadioNode interface {
-	TeamOwned() Team
+	HasTeam
 	RadioCollider() physics.CircleCollider
+	HasRadio() bool
 }
 
 type Capturer interface {
-	TeamOwned() Team
+	HasTeam
 	Collider() physics.CircleCollider
 }
 
