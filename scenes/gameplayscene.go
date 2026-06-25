@@ -83,10 +83,61 @@ func (g *GameplayScene) addObject(obj objects.GameObject) {
 	}
 }
 
+func (g *GameplayScene) radioNetworkFor(mecha *objects.Mecha) map[objects.RadioNode]bool {
+	connected := map[objects.RadioNode]bool{}
+	var insideNodes []objects.RadioNode
+
+	// Loop all radio nodes, collect same Team and mecha is inside of (likely only max 2)
+	for _, radioNode := range g.radioCollisions {
+		if radioNode.TeamOwned() != mecha.TeamOwned() {
+			continue
+		}
+
+		if physics.CircleCollidersCollided(radioNode.RadioCollider(), mecha.Collider()) {
+			insideNodes = append(insideNodes, radioNode)
+		}
+	}
+
+	// Loop and walk the touching same team radio nodes
+	for len(insideNodes) > 0 {
+		node := insideNodes[len(insideNodes)-1]
+		insideNodes = insideNodes[:len(insideNodes)-1]
+
+		// if we're already connected, hop out of this node
+		if connected[node] {
+			continue
+		}
+		connected[node] = true
+
+		for _, next := range g.radioCollisions {
+			if connected[next] || next.TeamOwned() != mecha.TeamOwned() {
+				continue
+			}
+
+			if physics.CircleCollidersCollided(node.RadioCollider(), next.RadioCollider()) {
+				insideNodes = append(insideNodes, next)
+			}
+		}
+	}
+
+	return connected
+}
+
+func (g *GameplayScene) radioNetworkContainsMecha(network map[objects.RadioNode]bool, target *objects.Mecha) bool {
+	for node := range network {
+		if physics.CircleCollidersCollided(node.RadioCollider(), target.Collider()) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (g *GameplayScene) buildWorldContext(mecha *objects.Mecha) objects.WorldContext {
 	var wc objects.WorldContext
 
-	// Loop Dynamic
+	network := g.radioNetworkFor(mecha)
+
 	for _, dynamic := range g.dynamicCollisions {
 		// Only Mechas
 		obj, ok := dynamic.(*objects.Mecha)
@@ -96,7 +147,7 @@ func (g *GameplayScene) buildWorldContext(mecha *objects.Mecha) objects.WorldCon
 
 		delta := obj.Position.Subbed(mecha.Position)
 		delLength := delta.Length()
-		if delLength < 350 {
+		if delLength < 350 || g.radioNetworkContainsMecha(network, obj) {
 			wc.NearbyMecha = append(wc.NearbyMecha, objects.ObjectInfo{
 				Position: obj.Position,
 				Team:     obj.TeamOwned(),

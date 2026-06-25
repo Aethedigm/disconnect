@@ -5,6 +5,7 @@ import (
 	"image"
 	"log"
 	"math"
+	"unsafe"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -19,6 +20,14 @@ func ApproxEquals(val1, val2 float64) bool {
 	}
 
 	return false
+}
+
+func FastBoolConvFloat32(b bool) float32 {
+	return float32(FastBoolConv(b))
+}
+
+func FastBoolConv(b bool) int {
+	return int(*(*byte)(unsafe.Pointer(&b)))
 }
 
 func ImageDecode(spriteData []byte) *ebiten.Image {

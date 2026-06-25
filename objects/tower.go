@@ -49,6 +49,13 @@ func (t *Tower) Draw(screen *ebiten.Image) {
 	cam := camera.GetCamera()
 	op.GeoM.Translate(t.Position.X-cam.Position.X, t.Position.Y-cam.Position.Y)
 
+	// Team Coloring
+	if t.Team != TeamNone {
+		red := utils.FastBoolConvFloat32(t.Team == TeamEnemy)
+		blue := utils.FastBoolConvFloat32(t.Team == TeamFriendly)
+		op.ColorScale.Scale(red, 0, blue, 1)
+	}
+
 	screen.DrawImage(t.Sprite, op)
 }
 
@@ -62,7 +69,7 @@ func (t *Tower) Collider() physics.CircleCollider {
 func (t *Tower) RadioCollider() physics.CircleCollider {
 	return physics.CircleCollider{
 		Center: t.Position,
-		Radius: 300,
+		Radius: 500,
 	}
 }
 

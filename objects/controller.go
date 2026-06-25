@@ -67,12 +67,17 @@ type AIController struct {
 type PlayerController struct{}
 
 func GetMechaBreakdowns(wc WorldContext, a *AIController) (enemies, friendlies []*ObjectInfo, enemyFound bool) {
+	var closestEnemy *ObjectInfo
 	for _, mecha := range wc.NearbyMecha {
 		if mecha.Team == a.Team {
 			friendlies = append(friendlies, &mecha)
 		} else {
 			enemies = append(enemies, &mecha)
 			enemyFound = true
+
+			if closestEnemy == nil || mecha.Distance < closestEnemy.Distance {
+				closestEnemy = &mecha
+			}
 		}
 	}
 
@@ -189,7 +194,6 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 	}
 
 	if a.State == FightEnemy {
-		log.Println("Want to fight enemies")
 		if !Contains(enemies, a.TargetEnemy) {
 			// Remove target if not in context anymore
 			a.TargetEnemy = nil
@@ -222,7 +226,6 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 	}
 
 	if a.State == CaptureTower {
-		log.Println("Want to capture tower")
 		if a.TargetTravelTime <= 0 {
 			a.TargetTravelVector = bestTower.Position
 			a.TargetTravelTime = 120
