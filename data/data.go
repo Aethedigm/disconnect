@@ -32,3 +32,6 @@ var MechaTopTwo []byte
 
 //go:embed MechaTopCommander.png
 var MechaTopCommander []byte
+
+//go:embed Rocket.png
+var Rocket []byte

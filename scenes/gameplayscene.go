@@ -175,6 +175,23 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 	var destroyed []objects.GameObject
 
 	for i := range g.gameObjects {
+		if explosion, ok := g.gameObjects[i].(*objects.Explosion); ok {
+			for _, dynamics := range g.dynamicCollisions {
+				if mecha, ok := dynamics.(*objects.Mecha); ok {
+					if mecha.Team == explosion.Team {
+						continue
+					}
+
+					val := physics.ResolveCircleOverlap(explosion.Explosion(), mecha.Collider())
+					if !val.Equals(utils.Vector2Zero()) {
+						mecha.ApplyDamage(explosion.SplashDamage)
+					}
+				}
+			}
+
+			destroyed = append(destroyed, explosion)
+		}
+
 		if mecha, ok := g.gameObjects[i].(*objects.Mecha); ok {
 			mecha.SetWorldContext(
 				g.buildWorldContext(mecha),
@@ -226,6 +243,11 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 			val := physics.ResolveCircleOverlap(g.projectiles[i].Collider(), static.Collider())
 			if !val.Equals(utils.Vector2Zero()) {
 				g.projectiles[i].Destroy()
+
+				if rocket, ok := g.projectiles[i].(*objects.Rocket); ok {
+					spawned = append(spawned, rocket.Explode().Spawn...)
+				}
+
 				break
 			}
 		}
@@ -249,6 +271,10 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 
 				if damageTaker, ok := g.dynamicCollisions[j].(objects.DamageTarget); ok {
 					damageTaker.ApplyDamage(g.projectiles[i].ProjectileDamage())
+
+					if rocket, ok := g.projectiles[i].(*objects.Rocket); ok {
+						spawned = append(spawned, rocket.Explode().Spawn...)
+					}
 				}
 				break
 			}

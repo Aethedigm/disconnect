@@ -4,12 +4,20 @@ import (
 	"main/utils"
 )
 
+type WeaponType int
+
+const (
+	WTBullet WeaponType = iota
+	WTRocket
+)
+
 type Weapon struct {
 	FireRate     float64
 	FireCooldown float64
 	Damage       float64
 	Range        float64
 	Speed        float64
+	Type         WeaponType
 }
 
 func NewAutoGun() *Weapon {
@@ -23,10 +31,11 @@ func NewAutoGun() *Weapon {
 
 func NewRocketLauncher() *Weapon {
 	return &Weapon{
-		FireRate: 1000,
+		FireRate: 200,
 		Damage:   30,
 		Range:    950,
 		Speed:    50,
+		Type:     WTRocket,
 	}
 }
 
@@ -44,9 +53,16 @@ func (w *Weapon) Fire(pos utils.Vector2, rot float64, team Team) []GameObject {
 
 	if w.FireCooldown <= 0 {
 		w.FireCooldown = w.FireRate
-		projectiles = append(projectiles, NewBullet(
-			w.Damage, w.Range, w.Speed, rot, pos, team,
-		))
+
+		if w.Type == WTRocket {
+			projectiles = append(projectiles, NewRocket(
+				w.Damage, w.Range, w.Speed, rot, pos, team,
+			))
+		} else {
+			projectiles = append(projectiles, NewBullet(
+				w.Damage, w.Range, w.Speed, rot, pos, team,
+			))
+		}
 	}
 
 	return projectiles

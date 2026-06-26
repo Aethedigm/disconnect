@@ -41,11 +41,11 @@ func NewMechaTopTwo() MechaUpperPart {
 		RotationSpeed: 2 * math.Pi / 180,
 		Guns: []GunMount{
 			{
-				LocalPosition: utils.Vector2{},
+				LocalPosition: utils.Vector2{X: 32, Y: 10},
 				Weapon:        NewRocketLauncher(),
 			},
 			{
-				LocalPosition: utils.Vector2{},
+				LocalPosition: utils.Vector2{X: 32, Y: -10},
 				Weapon:        NewRocketLauncher(),
 			},
 		},

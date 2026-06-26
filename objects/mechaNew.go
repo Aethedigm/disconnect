@@ -39,7 +39,8 @@ func NewPlayerMecha(position utils.Vector2) *Mecha {
 		LowerPart:  NewMechaBottomOne(),
 		// LowerPart: NewMechaBottomTwo(),
 		// UpperPart: NewMechaTopOne(),
-		UpperPart: NewMechaTopFour(),
+		// UpperPart: NewMechaTopFour(),
+		UpperPart: NewMechaTopTwo(),
 		// UpperPart: NewMechaTopThree(),
 	}
 }
