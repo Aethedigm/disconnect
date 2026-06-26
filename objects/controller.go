@@ -1,7 +1,6 @@
 package objects
 
 import (
-	"log"
 	"main/camera"
 	"main/utils"
 	"math"
@@ -91,7 +90,7 @@ func GetBestTower(wc WorldContext, mc MechaContext, a *AIController) (bestTower 
 		if tower.Position.DistanceTo(mc.Position) < 80 && (tower.Team != a.Team || (tower.Team == a.Team && tower.Progress < 750)) {
 			// We're here
 			// Our Team Owns it and we need more progress
-			// Our team doesn't own it
+			// Our Team doesn't own it
 			bestTower = &tower
 			towerFound = true
 
@@ -145,7 +144,6 @@ func GetClosestTower(wc WorldContext, a *AIController) (closestTower *ObjectInfo
 	return
 }
 
-// TODO: Replace AIController.Update()
 func (a *AIController) StateMachine(mc MechaContext, wc WorldContext) (enemies, friendlies []*ObjectInfo, bestTower *ObjectInfo) {
 	enemyFound, towerFound := false, false
 
@@ -153,13 +151,15 @@ func (a *AIController) StateMachine(mc MechaContext, wc WorldContext) (enemies, 
 	bestTower, towerFound = GetBestTower(wc, mc, a)
 
 	switch {
-	case enemyFound && mc.Health < 25 && len(friendlies) == 0:
+	case enemyFound && mc.Health < 40 && len(friendlies) == 0: // Getting low, no friends
+		fallthrough
+	case enemyFound && mc.Health < 20: // Getting very low
 		a.State = FleeEnemies
-	case enemyFound:
+	case enemyFound: // Fight
 		a.State = FightEnemy
-	case towerFound:
+	case towerFound: // No enemies, let's capture tower if there is one
 		a.State = CaptureTower
-	default:
+	default: // No tower, no enemies
 		a.State = Wander
 	}
 
@@ -186,11 +186,51 @@ func Contains(o []*ObjectInfo, t *ObjectInfo) bool {
 
 func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 	a.TargetTravelTime--
-	enemies, _, bestTower := a.StateMachine(mc, wc)
+	enemies, friendlies, bestTower := a.StateMachine(mc, wc)
 
 	if a.State == FleeEnemies {
-		log.Println("Want to flee enemies")
-		// run generally away?
+		closestFriendly := make([]*ObjectInfo, 2)
+		for _, friendly := range friendlies {
+			if closestFriendly[0] == nil {
+				closestFriendly[0] = friendly
+			}
+
+			if friendly.Distance < closestFriendly[0].Distance {
+				closestFriendly[0] = friendly
+			}
+		}
+
+		for _, tower := range wc.NearbyTowers {
+			if tower.Team == a.Team {
+				if closestFriendly[1] == nil {
+					closestFriendly[1] = &tower
+				}
+
+				if tower.Distance < closestFriendly[1].Distance {
+					closestFriendly[1] = &tower
+				}
+			}
+		}
+
+		var closestFriendlyObj *ObjectInfo
+		for _, closest := range closestFriendly {
+			if closest == nil {
+				continue
+			}
+
+			if closestFriendlyObj == nil {
+				closestFriendlyObj = closest
+			}
+
+			if closest.Distance < closestFriendlyObj.Distance {
+				closestFriendlyObj = closest
+			}
+		}
+
+		if a.TargetTravelTime <= 0 && closestFriendlyObj != nil {
+			a.TargetTravelVector = closestFriendlyObj.Position
+			a.TargetTravelTime = 60
+		}
 	}
 
 	if a.State == FightEnemy {
@@ -233,7 +273,16 @@ func (a *AIController) Update(mc MechaContext, wc WorldContext) (inp Input) {
 	}
 
 	if a.State == Wander {
-		log.Println("Want to wander")
+		// Pick random movement target
+
+		newVector := mc.Position
+		newVector.X += rand.Float64()*200 - 100
+		newVector.Y += rand.Float64()*200 - 100
+
+		if a.TargetTravelTime <= 0 {
+			a.TargetTravelVector = newVector
+			a.TargetTravelTime = 60
+		}
 	}
 
 	// Move towards target travel vector
