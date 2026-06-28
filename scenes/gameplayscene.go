@@ -221,7 +221,15 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 	// Check for End State
 	if g.CheckForGameEnded() {
 		// Game is complete, go to Win/Loss screen
+		controller.ChangeScene(NewGameOverScreen(
+			GameOverStats{
+				PlayerWon:   g.towers[0].Team == objects.TeamFriendly,
+				FriendlyCap: g.captureAmounts[objects.TeamFriendly],
+				EnemyCap:    g.captureAmounts[objects.TeamEnemy],
+			},
+		))
 
+		return nil
 	}
 
 	for i := range g.gameObjects {
