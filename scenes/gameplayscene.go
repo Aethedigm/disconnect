@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"image/color"
 	"log"
+	"main/audio"
 	"main/camera"
 	"main/objects"
 	"main/physics"
@@ -37,6 +38,8 @@ type GameplayScene struct {
 	isPaused bool
 
 	textSource *text.GoTextFaceSource
+
+	audioManager *audio.AudioManager
 }
 
 func NewGameplayScene(loadout Loadout) *GameplayScene {
@@ -79,6 +82,8 @@ func NewGameplayScene(loadout Loadout) *GameplayScene {
 	}
 
 	gScene.textSource = s
+
+	gScene.audioManager = audio.NewAudioManager()
 
 	return gScene
 }
@@ -360,6 +365,10 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 
 	for _, obj := range spawned {
 		g.addObject(obj)
+
+		if _, ok := obj.(*objects.Bullet); ok {
+			g.audioManager.Play(audio.ShootSFX)
+		}
 	}
 
 	return nil

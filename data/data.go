@@ -41,3 +41,6 @@ var SelectorArrow []byte
 
 //go:embed SelectorRed.png
 var SelectorOutline []byte
+
+//go:embed shoot.wav
+var SFX_Shoot []byte
