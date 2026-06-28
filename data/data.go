@@ -35,3 +35,6 @@ var MechaTopCommander []byte
 
 //go:embed Rocket.png
 var Rocket []byte
+
+//go:embed SelectorArrow.png
+var SelectorArrow []byte

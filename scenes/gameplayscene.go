@@ -28,6 +28,7 @@ func NewGameplayScene() *GameplayScene {
 
 	gScene.Cam = camera.GetCamera()
 
+	// TODO: Load levels
 	ebiten.SetCursorMode(ebiten.CursorModeHidden)
 	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 100, Y: 100}))
 	gScene.addObject(objects.NewFriendlyMecha(utils.Vector2{X: 000, Y: 000}))
@@ -253,7 +254,6 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 		}
 
 		for j := range g.dynamicCollisions {
-			// TODO: Impl DamageTarget interface
 			if targetTeam, ok := g.dynamicCollisions[j].(objects.HasTeam); ok {
 				if targetTeam.TeamOwned() == g.projectiles[i].TeamOwned() {
 					continue
@@ -266,7 +266,6 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 
 			val := physics.ResolveCircleOverlap(g.projectiles[i].Collider(), g.dynamicCollisions[j].Collider())
 			if !val.Equals(utils.Vector2Zero()) {
-				// Do some kind of damage to the dynamic object
 				g.projectiles[i].Destroy()
 
 				if damageTaker, ok := g.dynamicCollisions[j].(objects.DamageTarget); ok {

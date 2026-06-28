@@ -10,13 +10,13 @@ import (
 )
 
 type Game struct {
-	sceneController scenes.SceneController
+	sceneController *scenes.SceneController
 }
 
 func NewGame() *Game {
 	return &Game{
-		// sceneController: *scenes.NewSceneController(scenes.NewMainMenuScene()),
-		sceneController: *scenes.NewSceneController(scenes.NewGameplayScene()),
+		sceneController: scenes.NewSceneController(scenes.NewMainMenuScene()),
+		// sceneController: *scenes.NewSceneController(scenes.NewGameplayScene()),
 	}
 }
 
