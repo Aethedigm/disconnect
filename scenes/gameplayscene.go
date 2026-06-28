@@ -1,14 +1,18 @@
 package scenes
 
 import (
+	"bytes"
 	"image/color"
+	"log"
 	"main/camera"
 	"main/objects"
 	"main/physics"
 	"main/utils"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 type Loadout struct {
@@ -31,6 +35,8 @@ type GameplayScene struct {
 	captureAmounts map[objects.Team]int
 
 	isPaused bool
+
+	textSource *text.GoTextFaceSource
 }
 
 func NewGameplayScene(loadout Loadout) *GameplayScene {
@@ -66,6 +72,13 @@ func NewGameplayScene(loadout Loadout) *GameplayScene {
 	gScene.addObject(objects.NewCursor())
 
 	gScene.captureAmounts = make(map[objects.Team]int)
+
+	s, err := text.NewGoTextFaceSource(bytes.NewReader(fonts.MPlus1pRegular_ttf))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gScene.textSource = s
 
 	return gScene
 }
@@ -384,6 +397,19 @@ func (g *GameplayScene) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{162, 169, 71, 0})
 	for _, gObj := range g.gameObjects {
 		gObj.Draw(screen)
+	}
+
+	if g.isPaused {
+		pOp := &text.DrawOptions{}
+		_, h := ebiten.WindowSize()
+		pOp.GeoM.Translate(15, float64(h-30))
+		face := &text.GoTextFace{
+			Source: g.textSource,
+			Size:   24,
+		}
+
+		message := "Paused"
+		text.Draw(screen, message, face, pOp)
 	}
 }
 

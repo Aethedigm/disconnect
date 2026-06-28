@@ -70,4 +70,8 @@ func (g *GameOverScreen) Draw(screen *ebiten.Image) {
 	message = fmt.Sprintf("Enemy Capture Score: %d", g.GOS.EnemyCap)
 	op.GeoM.Translate(0, 50)
 	text.Draw(screen, message, face, op)
+
+	message = "Press ESC or RETURN (Enter) to continue..."
+	op.GeoM.Translate(0, 50)
+	text.Draw(screen, message, face, op)
 }
