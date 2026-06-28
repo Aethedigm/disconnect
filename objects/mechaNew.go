@@ -30,17 +30,35 @@ func NewFriendlyMecha(position utils.Vector2) *Mecha {
 	}
 }
 
-func NewPlayerMecha(position utils.Vector2) *Mecha {
+func NewPlayerMecha(position utils.Vector2, upper, lower int) *Mecha {
+
+	var up MechaUpperPart
+	var low MechaLowerPart
+
+	switch upper {
+	case 1:
+		up = NewMechaTopTwo()
+	case 2:
+		up = NewMechaTopThree()
+	case 3:
+		up = NewMechaTopFour()
+	default:
+		up = NewMechaTopOne()
+	}
+
+	switch lower {
+	case 1:
+		low = NewMechaBottomTwo()
+	default:
+		low = NewMechaBottomOne()
+	}
+
 	return &Mecha{
 		Position:   position,
 		Controller: &PlayerController{},
 		Team:       TeamFriendly,
 		Health:     100,
-		LowerPart:  NewMechaBottomOne(),
-		// LowerPart: NewMechaBottomTwo(),
-		// UpperPart: NewMechaTopOne(),
-		// UpperPart: NewMechaTopFour(),
-		UpperPart: NewMechaTopTwo(),
-		// UpperPart: NewMechaTopThree(),
+		UpperPart:  up,
+		LowerPart:  low,
 	}
 }

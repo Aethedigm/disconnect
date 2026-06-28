@@ -25,8 +25,8 @@ func NewCustomizeMechaScene() *CustomizeMechaScene {
 		MechaUppers: []*ebiten.Image{
 			utils.ImageDecode(data.MechaTop),
 			utils.ImageDecode(data.MechaTopTwo),
-			utils.ImageDecode(data.MechaTopCommander),
 			utils.ImageDecode(data.TankTopOne),
+			utils.ImageDecode(data.MechaTopCommander),
 		},
 
 		MechaLowers: []*ebiten.Image{
@@ -41,6 +41,20 @@ func NewCustomizeMechaScene() *CustomizeMechaScene {
 }
 
 func (c *CustomizeMechaScene) Update(controller *SceneController) error {
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		controller.ChangeScene(NewMainMenuScene())
+		return nil
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
+		controller.ChangeScene(NewGameplayScene(Loadout{
+			Upper: c.upperSelection,
+			Lower: c.lowerSelection,
+		}))
+
+		return nil
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 		c.selectRow++
 	}

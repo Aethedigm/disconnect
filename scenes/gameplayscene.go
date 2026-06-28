@@ -11,6 +11,11 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+type Loadout struct {
+	Upper int
+	Lower int
+}
+
 type GameplayScene struct {
 	gameObjects       []objects.GameObject
 	staticCollisions  []objects.Collisions
@@ -28,7 +33,7 @@ type GameplayScene struct {
 	isPaused bool
 }
 
-func NewGameplayScene() *GameplayScene {
+func NewGameplayScene(loadout Loadout) *GameplayScene {
 	gScene := &GameplayScene{}
 
 	gScene.Cam = camera.GetCamera()
@@ -46,7 +51,7 @@ func NewGameplayScene() *GameplayScene {
 	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 1200, Y: 1200}))
 	gScene.addObject(objects.NewEnemyMecha(utils.Vector2{X: 1300, Y: 1300}))
 
-	pMecha := objects.NewPlayerMecha(utils.Vector2{X: 30, Y: 30})
+	pMecha := objects.NewPlayerMecha(utils.Vector2{X: 30, Y: 30}, loadout.Upper, loadout.Lower)
 	gScene.addObject(pMecha)
 	gScene.PlayerMecha = pMecha
 
