@@ -39,7 +39,7 @@ func NewAudioManager() *AudioManager {
 		muted:        false,
 		players:      playerMap,
 	}
-	log.Println("shoot wav bytes", len(data.SFX_Shoot))
+
 	a.loadSFX(ShootSFX, data.SFX_Shoot, 8)
 	return a
 }

@@ -38,8 +38,6 @@ type GameplayScene struct {
 	isPaused bool
 
 	textSource *text.GoTextFaceSource
-
-	audioManager *audio.AudioManager
 }
 
 func NewGameplayScene(loadout Loadout) *GameplayScene {
@@ -83,8 +81,6 @@ func NewGameplayScene(loadout Loadout) *GameplayScene {
 
 	gScene.textSource = s
 
-	gScene.audioManager = audio.NewAudioManager()
-
 	return gScene
 }
 
@@ -93,6 +89,8 @@ func (g *GameplayScene) addObject(obj objects.GameObject) {
 
 	if projectile, ok := obj.(objects.Projectile); ok {
 		g.projectiles = append(g.projectiles, projectile)
+		// Projectiles should NOT be anything else
+		return
 	} else if sCollider, ok := obj.(objects.Collisions); ok {
 		if dCollider, ok := obj.(objects.DynamicCollisions); ok {
 			g.dynamicCollisions = append(g.dynamicCollisions, dCollider)
@@ -367,7 +365,7 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 		g.addObject(obj)
 
 		if _, ok := obj.(*objects.Bullet); ok {
-			g.audioManager.Play(audio.ShootSFX)
+			controller.AudioManager.Play(audio.ShootSFX)
 		}
 	}
 

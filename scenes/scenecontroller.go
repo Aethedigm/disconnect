@@ -1,11 +1,14 @@
 package scenes
 
 import (
+	"main/audio"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type SceneController struct {
-	current Scene
+	current      Scene
+	AudioManager *audio.AudioManager
 }
 
 var (
@@ -13,9 +16,11 @@ var (
 )
 
 func NewSceneController(initial Scene) *SceneController {
-	return &SceneController{
-		current: initial,
+	sceneController := &SceneController{
+		current:      initial,
+		AudioManager: audio.NewAudioManager(),
 	}
+	return sceneController
 }
 
 func (s *SceneController) Update() error {
