@@ -55,9 +55,10 @@ func (m *MainMenuScene) Update(controller *SceneController) error {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) || inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
 		switch data.MenuOptions[m.selectedIndex] {
 		case "Play":
-			GlobalSceneController.ChangeScene(NewGameplayScene())
+			// controller.ChangeScene(NewGameplayScene())
+			controller.ChangeScene(NewCustomizeMechaScene())
 		case "Options":
-			GlobalSceneController.ChangeScene(NewOptionsScene())
+			controller.ChangeScene(NewOptionsScene())
 		case "Quit":
 			os.Exit(0)
 		default:

@@ -38,3 +38,6 @@ var Rocket []byte
 
 //go:embed SelectorArrow.png
 var SelectorArrow []byte
+
+//go:embed SelectorRed.png
+var SelectorOutline []byte

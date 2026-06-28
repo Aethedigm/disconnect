@@ -1,8 +1,6 @@
 package scenes
 
 import (
-	"log"
-
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -15,16 +13,9 @@ var (
 )
 
 func NewSceneController(initial Scene) *SceneController {
-	if GlobalSceneController == nil {
-
-		GlobalSceneController = &SceneController{
-			current: initial,
-		}
-	} else {
-		log.Fatal("Scene Controller Already Exists")
+	return &SceneController{
+		current: initial,
 	}
-
-	return GlobalSceneController
 }
 
 func (s *SceneController) Update() error {

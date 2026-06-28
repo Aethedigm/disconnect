@@ -8,6 +8,7 @@ import (
 	"main/utils"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type GameplayScene struct {
@@ -21,6 +22,10 @@ type GameplayScene struct {
 
 	Cam         *camera.Camera
 	PlayerMecha *objects.Mecha
+
+	captureAmounts map[objects.Team]int
+
+	isPaused bool
 }
 
 func NewGameplayScene() *GameplayScene {
@@ -54,6 +59,8 @@ func NewGameplayScene() *GameplayScene {
 	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 1000, Y: 650}))
 	gScene.addObject(objects.NewNeutralTower(utils.Vector2{X: 650, Y: 1000}))
 	gScene.addObject(objects.NewCursor())
+
+	gScene.captureAmounts = make(map[objects.Team]int)
 
 	return gScene
 }
@@ -171,9 +178,46 @@ func (g *GameplayScene) buildWorldContext(mecha *objects.Mecha) objects.WorldCon
 	return wc
 }
 
+func (g *GameplayScene) CheckForGameEnded() bool {
+	fTeam := 0
+	eTeam := 0
+
+	for _, tower := range g.towers {
+		if tower.Team == objects.TeamNone {
+			return false
+		}
+
+		if tower.Team == objects.TeamEnemy {
+			eTeam++
+		} else {
+			fTeam++
+		}
+
+		if eTeam > 0 && fTeam > 0 {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (g *GameplayScene) Update(controller *SceneController) error {
 	var spawned []objects.GameObject
 	var destroyed []objects.GameObject
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
+		g.isPaused = !g.isPaused
+	}
+
+	if g.isPaused {
+		return nil
+	}
+
+	// Check for End State
+	if g.CheckForGameEnded() {
+		// Game is complete, go to Win/Loss screen
+
+	}
 
 	for i := range g.gameObjects {
 		if explosion, ok := g.gameObjects[i].(*objects.Explosion); ok {
@@ -239,7 +283,6 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 		}
 
 		// Static just destroys the projectile
-		// TODO: Trigger explosion still from rockets?
 		for _, static := range g.staticCollisions {
 			val := physics.ResolveCircleOverlap(g.projectiles[i].Collider(), static.Collider())
 			if !val.Equals(utils.Vector2Zero()) {
@@ -311,6 +354,7 @@ func (g *GameplayScene) updateTowerCapture(tower *objects.Tower) {
 
 			if tower.TeamOwned() == capture.TeamOwned() {
 				tower.CaptureProgress += 2
+				g.captureAmounts[tower.TeamOwned()]++
 			} else {
 				tower.CaptureProgress -= 2
 			}
