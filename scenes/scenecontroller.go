@@ -11,10 +11,6 @@ type SceneController struct {
 	AudioManager *audio.AudioManager
 }
 
-var (
-	GlobalSceneController *SceneController
-)
-
 func NewSceneController(initial Scene) *SceneController {
 	sceneController := &SceneController{
 		current:      initial,

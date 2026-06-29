@@ -21,7 +21,6 @@ type AudioManager struct {
 	ctx     *audio.Context
 	players map[SFX][]*audio.Player
 	muted   bool
-	inited  bool
 }
 
 func NewAudioManager() *AudioManager {
