@@ -1,13 +1,23 @@
 package objects
 
 import (
+	"image/color"
 	"main/camera"
 	"main/physics"
 	"main/utils"
 	"math"
+	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
+
+type SmokePuff struct {
+	Position utils.Vector2
+	Radius   float64
+	Life     int
+	MaxLife  int
+}
 
 type Mecha struct {
 	Position utils.Vector2
@@ -23,6 +33,9 @@ type Mecha struct {
 	wc WorldContext
 
 	targetSprite *ebiten.Image
+
+	smokePuffs []SmokePuff
+	smokeTimer int
 }
 
 func (m *Mecha) Update() (res UpdateResult) {
@@ -71,7 +84,37 @@ func (m *Mecha) Update() (res UpdateResult) {
 	// Destroyed
 	res.Destroy = m.Health < 1
 
+	if m.Health < 40 {
+		m.UpdateDamageSmoke()
+	}
+
 	return
+}
+
+func (m *Mecha) UpdateDamageSmoke() {
+	for i := 0; i < len(m.smokePuffs); i++ {
+		m.smokePuffs[i].Radius += 0.2
+		m.smokePuffs[i].Life--
+
+		if m.smokePuffs[i].Life <= 0 {
+			m.smokePuffs = append(m.smokePuffs[:i], m.smokePuffs[i+1:]...)
+			i--
+		}
+	}
+
+	m.smokeTimer--
+	if m.smokeTimer > 0 || len(m.smokePuffs) > 5 {
+		return
+	}
+
+	m.smokeTimer = 10
+
+	m.smokePuffs = append(m.smokePuffs, SmokePuff{
+		Position: m.Position,
+		Radius:   3 + rand.Float64()*2,
+		Life:     60,
+		MaxLife:  60,
+	})
 }
 
 func drawPart(screen, sprite *ebiten.Image, pos utils.Vector2, rot float64) {
@@ -90,6 +133,26 @@ func drawPart(screen, sprite *ebiten.Image, pos utils.Vector2, rot float64) {
 	screen.DrawImage(sprite, op)
 }
 
+func drawSmoke(screen *ebiten.Image, pos utils.Vector2) {
+	cam := camera.GetCamera()
+
+	x := float32(pos.X - cam.Position.X)
+	y := float32(pos.Y - cam.Position.Y)
+
+	vector.FillCircle(screen, x, y, 5, color.RGBA{50, 50, 50, 160}, true)
+	vector.FillCircle(screen, x+5, y-3, 4, color.RGBA{80, 80, 80, 120}, true)
+	vector.FillCircle(screen, x-4, y-5, 3, color.RGBA{30, 30, 30, 140}, true)
+}
+
+func (m *Mecha) DrawSmokePuffs(screen *ebiten.Image) {
+	cam := camera.GetCamera()
+	for _, smoke := range m.smokePuffs {
+		alpha := uint8(180 * float64(smoke.Life) / float64(smoke.MaxLife))
+		smokeColor := color.RGBA{80, 80, 80, alpha}
+		vector.FillCircle(screen, float32(smoke.Position.X-cam.Position.X), float32(smoke.Position.Y-cam.Position.Y), float32(smoke.Radius), smokeColor, true)
+	}
+}
+
 func (m *Mecha) Draw(screen *ebiten.Image) {
 	// Draw order matters, Lower then Upper
 	drawPart(screen, m.LowerPart.Sprite, m.Position, m.LowerPart.Rotation)
@@ -105,6 +168,11 @@ func (m *Mecha) Draw(screen *ebiten.Image) {
 		cam := camera.GetCamera()
 		tOp.GeoM.Translate(m.Position.X-cam.Position.X, m.Position.Y-cam.Position.Y)
 		screen.DrawImage(m.targetSprite, tOp)
+	}
+
+	if m.Health < 40 {
+		// drawSmoke(screen, m.Position)
+		m.DrawSmokePuffs(screen)
 	}
 }
 
