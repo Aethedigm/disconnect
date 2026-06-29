@@ -367,6 +367,10 @@ func (g *GameplayScene) Update(controller *SceneController) error {
 		if _, ok := obj.(*objects.Bullet); ok {
 			controller.AudioManager.Play(audio.ShootSFX)
 		}
+
+		if _, ok := obj.(*objects.Explosion); ok {
+			controller.AudioManager.Play(audio.ExplosionSFX)
+		}
 	}
 
 	return nil

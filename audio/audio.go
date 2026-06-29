@@ -14,33 +14,26 @@ type SFX int
 
 const (
 	ShootSFX SFX = iota
+	ExplosionSFX
 )
 
 type AudioManager struct {
-	ctx          *audio.Context
-	sounds       map[SFX][]byte
-	decompSounds map[SFX][]byte
-	players      map[SFX][]*audio.Player
-	muted        bool
-	inited       bool
+	ctx     *audio.Context
+	players map[SFX][]*audio.Player
+	muted   bool
+	inited  bool
 }
 
 func NewAudioManager() *AudioManager {
-
-	soundMap := make(map[SFX][]byte)
-	decompSounds := make(map[SFX][]byte)
 	playerMap := make(map[SFX][]*audio.Player)
-	soundMap[ShootSFX] = data.SFX_Shoot
-
 	a := &AudioManager{
-		ctx:          audio.NewContext(44100),
-		sounds:       soundMap,
-		decompSounds: decompSounds,
-		muted:        false,
-		players:      playerMap,
+		ctx:     audio.NewContext(44100),
+		muted:   false,
+		players: playerMap,
 	}
 
 	a.loadSFX(ShootSFX, data.SFX_Shoot, 8)
+	a.loadSFX(ExplosionSFX, data.SFX_Explode, 8)
 	return a
 }
 
