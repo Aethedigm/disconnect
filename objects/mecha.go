@@ -160,7 +160,6 @@ func (m *Mecha) Draw(screen *ebiten.Image) {
 	}
 
 	if m.Health < 40 {
-		// drawSmoke(screen, m.Position)
 		m.DrawSmokePuffs(screen)
 	}
 }

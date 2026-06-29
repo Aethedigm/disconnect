@@ -453,7 +453,7 @@ func (g *GameplayScene) Draw(screen *ebiten.Image) {
 
 	if g.isPaused {
 		pOp := &text.DrawOptions{}
-		_, h := ebiten.WindowSize()
+		h := screen.Bounds().Dy()
 		pOp.GeoM.Translate(15, float64(h-30))
 		face := &text.GoTextFace{
 			Source: g.textSource,

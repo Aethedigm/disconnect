@@ -52,7 +52,7 @@ func (g *GameOverScreen) Draw(screen *ebiten.Image) {
 		message = "You Lost!"
 	}
 
-	w, _ := ebiten.WindowSize()
+	w := screen.Bounds().Dx()
 
 	face := &text.GoTextFace{
 		Source: g.textSource,
@@ -60,7 +60,7 @@ func (g *GameOverScreen) Draw(screen *ebiten.Image) {
 	}
 
 	op := &text.DrawOptions{}
-	op.GeoM.Translate(float64(w/3), 15)
+	op.GeoM.Translate(float64(w/4), 15)
 	text.Draw(screen, message, face, op)
 
 	message = fmt.Sprintf("Player Capture Score: %d", g.GOS.FriendlyCap)

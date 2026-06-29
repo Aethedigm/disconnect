@@ -139,7 +139,7 @@ func (c *CustomizeMechaScene) DrawParts(screen *ebiten.Image, arrData []*ebiten.
 func (c *CustomizeMechaScene) DrawInstructions(screen *ebiten.Image) {
 	textOp := &text.DrawOptions{}
 
-	_, h := ebiten.WindowSize()
+	h := screen.Bounds().Dy()
 	textOp.GeoM.Translate(10, float64(h-90))
 	face := &text.GoTextFace{
 		Source: c.textSource,
@@ -182,7 +182,8 @@ func (c *CustomizeMechaScene) Draw(screen *ebiten.Image) {
 
 	// Draw preview
 	mOp := &ebiten.DrawImageOptions{}
-	w, h := ebiten.WindowSize()
+	w := screen.Bounds().Dx()
+	h := screen.Bounds().Dy()
 	mOp.GeoM.Scale(4, 4)
 	mOp.GeoM.Translate(float64(w/2), float64(h/2))
 	screen.DrawImage(c.MechaLowers[c.lowerSelection], mOp)
