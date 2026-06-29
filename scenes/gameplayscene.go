@@ -14,6 +14,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Loadout struct {
@@ -404,8 +405,47 @@ func (g *GameplayScene) updateTowerCapture(tower *objects.Tower) {
 	}
 }
 
+func (g *GameplayScene) DrawRadioNetwork(screen *ebiten.Image) {
+	cam := camera.GetCamera()
+
+	for i := range g.radioCollisions {
+		c1 := g.radioCollisions[i].RadioCollider()
+		team := g.radioCollisions[i].TeamOwned()
+
+		col := color.RGBA{80, 80, 80, 25}
+		lineCol := color.RGBA{120, 120, 120, 90}
+
+		if team == objects.TeamFriendly {
+			col = color.RGBA{40, 120, 255, 20}
+			lineCol = color.RGBA{80, 180, 255, 130}
+		} else if team == objects.TeamEnemy {
+			col = color.RGBA{255, 40, 40, 20}
+			lineCol = color.RGBA{255, 70, 70, 130}
+		}
+
+		// Draw circle
+		vector.StrokeCircle(screen, float32(c1.Center.X-cam.Position.X), float32(c1.Center.Y-cam.Position.Y), float32(c1.Radius), 2, col, true)
+
+		for j := i + 1; j < len(g.radioCollisions); j++ {
+			if g.radioCollisions[j].TeamOwned() != team {
+				continue
+			}
+
+			c2 := g.radioCollisions[j].RadioCollider()
+			if physics.CircleCollidersCollided(c1, c2) {
+				// Draw lines
+				vector.StrokeLine(screen, float32(c1.Center.X-cam.Position.X), float32(c1.Center.Y-cam.Position.Y),
+					float32(c2.Center.X-cam.Position.X), float32(c2.Center.Y-cam.Position.Y), 2, lineCol, true)
+			}
+		}
+	}
+}
+
 func (g *GameplayScene) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{162, 169, 71, 0})
+
+	g.DrawRadioNetwork(screen)
+
 	for _, gObj := range g.gameObjects {
 		gObj.Draw(screen)
 	}
