@@ -1,16 +1,23 @@
 package scenes
 
 import (
+	"bytes"
+	"log"
 	"main/data"
 	"main/utils"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 type CustomizeMechaScene struct {
 	MechaUppers []*ebiten.Image
 	MechaLowers []*ebiten.Image
+
+	muDesc []string
+	mlDesc []string
 
 	selectRow int
 
@@ -18,6 +25,8 @@ type CustomizeMechaScene struct {
 	lowerSelection int
 
 	Selector *ebiten.Image
+
+	textSource *text.GoTextFaceSource
 }
 
 func NewCustomizeMechaScene() *CustomizeMechaScene {
@@ -34,8 +43,27 @@ func NewCustomizeMechaScene() *CustomizeMechaScene {
 			utils.ImageDecode(data.TankBottomOne),
 		},
 
+		muDesc: []string{
+			"Dual auto guns",
+			"Dual rocket pods, high damage but slow",
+			"Single sniper rifle, high damage + range",
+			"Commander (has radio) with single auto gun",
+		},
+
+		mlDesc: []string{
+			"Walker legs",
+			"Tank treads, faster movement but slow turn",
+		},
+
 		Selector: utils.ImageDecode(data.SelectorOutline),
 	}
+
+	s, err := text.NewGoTextFaceSource(bytes.NewReader(fonts.MPlus1pRegular_ttf))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	scene.textSource = s
 
 	return scene
 }
@@ -108,6 +136,37 @@ func (c *CustomizeMechaScene) DrawParts(screen *ebiten.Image, arrData []*ebiten.
 	}
 }
 
+func (c *CustomizeMechaScene) DrawInstructions(screen *ebiten.Image) {
+	textOp := &text.DrawOptions{}
+
+	_, h := ebiten.WindowSize()
+	textOp.GeoM.Translate(10, float64(h-90))
+	face := &text.GoTextFace{
+		Source: c.textSource,
+		Size:   24,
+	}
+
+	text.Draw(screen, "Left and Right arrows to change parts", face, textOp)
+	textOp.GeoM.Translate(0, 30)
+	text.Draw(screen, "Up and Down to change Upper or Leg selection", face, textOp)
+	textOp.GeoM.Translate(0, 30)
+	text.Draw(screen, "Press Enter to accept, ESC to cancel", face, textOp)
+}
+
+func (c *CustomizeMechaScene) DrawDescription(screen *ebiten.Image) {
+	textOp := &text.DrawOptions{}
+	textOp.GeoM.Translate(300, 30)
+	face := &text.GoTextFace{
+		Source: c.textSource,
+		Size:   24,
+	}
+
+	text.Draw(screen, c.muDesc[c.upperSelection], face, textOp)
+
+	textOp.GeoM.Translate(0, 30)
+	text.Draw(screen, c.mlDesc[c.lowerSelection], face, textOp)
+}
+
 func (c *CustomizeMechaScene) Draw(screen *ebiten.Image) {
 	c.DrawParts(screen, c.MechaUppers, 10)
 	c.DrawParts(screen, c.MechaLowers, 45)
@@ -124,7 +183,11 @@ func (c *CustomizeMechaScene) Draw(screen *ebiten.Image) {
 	// Draw preview
 	mOp := &ebiten.DrawImageOptions{}
 	w, h := ebiten.WindowSize()
+	mOp.GeoM.Scale(4, 4)
 	mOp.GeoM.Translate(float64(w/2), float64(h/2))
 	screen.DrawImage(c.MechaLowers[c.lowerSelection], mOp)
 	screen.DrawImage(c.MechaUppers[c.upperSelection], mOp)
+
+	c.DrawDescription(screen)
+	c.DrawInstructions(screen)
 }
