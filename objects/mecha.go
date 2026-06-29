@@ -21,6 +21,8 @@ type Mecha struct {
 	Health float64
 
 	wc WorldContext
+
+	targetSprite *ebiten.Image
 }
 
 func (m *Mecha) Update() (res UpdateResult) {
@@ -92,6 +94,18 @@ func (m *Mecha) Draw(screen *ebiten.Image) {
 	// Draw order matters, Lower then Upper
 	drawPart(screen, m.LowerPart.Sprite, m.Position, m.LowerPart.Rotation)
 	drawPart(screen, m.UpperPart.Sprite, m.Position, m.UpperPart.Rotation)
+
+	if m.Team == TeamEnemy {
+		// Draw red square as a "targeter" for player
+		tOp := &ebiten.DrawImageOptions{}
+		bounds := m.targetSprite.Bounds()
+		w := float64(bounds.Dx())
+		h := float64(bounds.Dy())
+		tOp.GeoM.Translate(-w/2, -h/2)
+		cam := camera.GetCamera()
+		tOp.GeoM.Translate(m.Position.X-cam.Position.X, m.Position.Y-cam.Position.Y)
+		screen.DrawImage(m.targetSprite, tOp)
+	}
 }
 
 func (m *Mecha) Collider() physics.CircleCollider {

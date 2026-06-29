@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"main/data"
 	"main/utils"
 )
 
@@ -10,10 +11,11 @@ func NewEnemyMecha(position utils.Vector2) *Mecha {
 		Controller: &AIController{
 			Team: TeamEnemy,
 		},
-		Team:      TeamEnemy,
-		Health:    100,
-		LowerPart: NewMechaBottomOne(),
-		UpperPart: NewMechaTopOne(),
+		Team:         TeamEnemy,
+		Health:       100,
+		LowerPart:    NewMechaBottomOne(),
+		UpperPart:    NewMechaTopOne(),
+		targetSprite: utils.ImageDecode(data.SelectorOutline),
 	}
 }
 
