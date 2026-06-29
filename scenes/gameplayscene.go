@@ -415,10 +415,11 @@ func (g *GameplayScene) DrawRadioNetwork(screen *ebiten.Image) {
 		col := color.RGBA{80, 80, 80, 25}
 		lineCol := color.RGBA{120, 120, 120, 90}
 
-		if team == objects.TeamFriendly {
+		switch team {
+		case objects.TeamFriendly:
 			col = color.RGBA{40, 120, 255, 20}
 			lineCol = color.RGBA{80, 180, 255, 130}
-		} else if team == objects.TeamEnemy {
+		case objects.TeamEnemy:
 			col = color.RGBA{255, 40, 40, 20}
 			lineCol = color.RGBA{255, 70, 70, 130}
 		}
