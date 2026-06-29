@@ -133,17 +133,6 @@ func drawPart(screen, sprite *ebiten.Image, pos utils.Vector2, rot float64) {
 	screen.DrawImage(sprite, op)
 }
 
-func drawSmoke(screen *ebiten.Image, pos utils.Vector2) {
-	cam := camera.GetCamera()
-
-	x := float32(pos.X - cam.Position.X)
-	y := float32(pos.Y - cam.Position.Y)
-
-	vector.FillCircle(screen, x, y, 5, color.RGBA{50, 50, 50, 160}, true)
-	vector.FillCircle(screen, x+5, y-3, 4, color.RGBA{80, 80, 80, 120}, true)
-	vector.FillCircle(screen, x-4, y-5, 3, color.RGBA{30, 30, 30, 140}, true)
-}
-
 func (m *Mecha) DrawSmokePuffs(screen *ebiten.Image) {
 	cam := camera.GetCamera()
 	for _, smoke := range m.smokePuffs {
